@@ -242,7 +242,7 @@ export const PLANET_DATA = [
    de Play/Pausa/Velocidad).
    ------------------------------------------------------------ */
 
-export const EARTH_YEAR_SECONDS = 20;
+export const EARTH_YEAR_SECONDS = 48;
 export const EARTH_DAY_SECONDS = EARTH_YEAR_SECONDS / 365.25;
 
 // loadTextureOrNull ahora vive en utils.js — la usan también sun.js y comets.js
@@ -334,6 +334,7 @@ export async function createPlanet(data) {
     orbitPivot,
     orbitLine,
     mesh,
+    orientationPivot, // FASE 15: acá cuelgan satélites artificiales (ISS, Tiangong) para la Tierra
     radius,
     ringMesh,
     moons,

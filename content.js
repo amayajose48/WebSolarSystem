@@ -248,4 +248,132 @@ export const BODY_CONTENT = {
       "Tarda 165 años terrestres en dar una vuelta al Sol — ni un año ha pasado desde su descubrimiento en 1846 hasta completar una órbita, en 2011.",
     ],
   },
+
+  "Cinturón de asteroides": {
+    tipo: "Región del Sistema Solar",
+    temperatura: "—",
+    masa: "Toda la región junta pesa menos que la Luna",
+    diametro: "—",
+    distanciaAlSol: "Entre 2,1 y 3,3 UA (entre Marte y Júpiter)",
+    dia: "—",
+    anio: "—",
+    lunas: "—",
+    curiosidades: [
+      "Contiene millones de objetos rocosos, pero están tan dispersos que las sondas espaciales pasan a través sin problema.",
+      "Ceres, el objeto más grande del cinturón, es un planeta enano — y por sí solo tiene casi un tercio de toda la masa del cinturón.",
+      "Probablemente son restos de un planeta que nunca llegó a formarse: la gravedad de Júpiter impidió que ese material se uniera.",
+    ],
+  },
+
+  "Cometa Ártico": {
+    tipo: "Cometa",
+    temperatura: "—",
+    masa: "—",
+    diametro: "Núcleo de unos pocos km",
+    distanciaAlSol: "Órbita muy excéntrica: se acerca mucho y se aleja muchísimo",
+    dia: "—",
+    anio: "—",
+    lunas: "—",
+    curiosidades: [
+      "Su cola siempre apunta en dirección opuesta al Sol, sin importar hacia dónde viaja — la empuja el viento solar.",
+      "Está hecho de hielo, polvo y roca: por eso a veces se los llama 'bolas de nieve sucias'.",
+      "Se mueve mucho más rápido cerca del Sol que lejos de él (2da ley de Kepler).",
+    ],
+  },
+
+  "Cometa Esmeralda": {
+    tipo: "Cometa",
+    temperatura: "—",
+    masa: "—",
+    diametro: "Núcleo de unos pocos km",
+    distanciaAlSol: "Órbita muy excéntrica: se acerca mucho y se aleja muchísimo",
+    dia: "—",
+    anio: "—",
+    lunas: "—",
+    curiosidades: [
+      "La cola de un cometa puede crecer millones de kilómetros cerca del Sol, y encogerse casi por completo lejos de él.",
+      "Cada vez que pasa cerca del Sol, pierde un poco de su material — los cometas no duran para siempre.",
+      "Algunos cometas tardan miles de años en completar una sola órbita.",
+    ],
+  },
+
+  "Cometa Dorado": {
+    tipo: "Cometa",
+    temperatura: "—",
+    masa: "—",
+    diametro: "Núcleo de unos pocos km",
+    distanciaAlSol: "Órbita muy excéntrica: se acerca mucho y se aleja muchísimo",
+    dia: "—",
+    anio: "—",
+    lunas: "—",
+    curiosidades: [
+      "Muchos cometas vienen del cinturón de Kuiper o de la lejanísima Nube de Oort, en los confines del Sistema Solar.",
+      "El polvo que dejan en su camino, al año siguiente, es lo que produce las lluvias de estrellas fugaces.",
+      "El cometa Halley, el más famoso de la historia real, vuelve a verse desde la Tierra cada 76 años.",
+    ],
+  },
+
+  Nebulosa: {
+    tipo: "Nube de gas y polvo interestelar",
+    temperatura: "—",
+    masa: "—",
+    diametro: "—",
+    distanciaAlSol: "Muy lejos del Sistema Solar, fuera de su alcance gravitacional",
+    dia: "—",
+    anio: "—",
+    lunas: "—",
+    curiosidades: [
+      "Muchas nebulosas son 'guarderías estelares': ahí nacen las estrellas nuevas.",
+      "Otras son los restos de una estrella que explotó como supernova.",
+      "La Nebulosa de Orión, una de las más famosas y reales, se puede ver a simple vista desde la Tierra en una noche despejada.",
+    ],
+  },
+
+  Galaxia: {
+    tipo: "Sistema de estrellas, gas y polvo unidos por gravedad",
+    temperatura: "—",
+    masa: "—",
+    diametro: "—",
+    distanciaAlSol: "Millones de años luz de distancia",
+    dia: "—",
+    anio: "—",
+    lunas: "—",
+    curiosidades: [
+      "Nuestra galaxia, la Vía Láctea, tiene entre 100.000 y 400.000 millones de estrellas.",
+      "La galaxia de Andrómeda, la más cercana a la nuestra, se está acercando y colisionará con la Vía Láctea... en unos 4.500 millones de años.",
+      "Existen alrededor de 2 billones de galaxias en el universo observable.",
+    ],
+  },
+
+  "Estación Espacial Internacional": {
+    tipo: "Estación espacial (obra humana en órbita)",
+    temperatura: "Interior climatizado a ~22 °C (el exterior varía entre -157 °C y 121 °C)",
+    masa: "~420.000 kg",
+    diametro: "~109 m de longitud (aprox. una cancha de fútbol)",
+    distanciaAlSol: "Órbita terrestre baja: ~400 km sobre la Tierra",
+    dia: "Da la vuelta completa a la Tierra cada ~92 minutos",
+    anio: "—",
+    lunas: "Tripulación habitual: 3 a 7 astronautas",
+    curiosidades: [
+      "Es un proyecto conjunto de Estados Unidos, Rusia, Europa, Japón y Canadá.",
+      "Está habitada de forma continua desde el año 2000: nunca estuvo vacía desde entonces.",
+      "Viaja a unos 28.000 km/h — da la vuelta a la Tierra más de 15 veces por día.",
+    ],
+  },
+
+  "Estación Espacial China (Tiangong)": {
+    tipo: "Estación espacial china (obra humana en órbita)",
+    temperatura: "Interior climatizado, similar a la ISS",
+    masa: "~100.000 kg (los 3 módulos combinados)",
+    diametro: "Forma de 'T': un módulo núcleo + 2 laboratorios",
+    distanciaAlSol: "Órbita terrestre baja: ~340-450 km sobre la Tierra",
+    dia: "Da la vuelta completa a la Tierra cada ~90 minutos",
+    anio: "—",
+    lunas: "Tripulación habitual: 3 taikonautas",
+    curiosidades: [
+      "Es operada únicamente por China, sin participación de otros países.",
+      "Su módulo núcleo, Tianhe, se lanzó en 2021; se completó con los módulos Wentian y Mengtian en 2022.",
+      "Es mucho más nueva que la ISS, que ya lleva más de dos décadas en órbita.",
+    ],
+  },
 };

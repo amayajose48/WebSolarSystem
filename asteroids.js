@@ -55,8 +55,11 @@ export function createAsteroidBelt(count = 500) {
   });
 
   const mesh = new THREE.InstancedMesh(geometry, material, count);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
+  // A esta escala y distancia, que cientos de rocas chiquitas proyecten
+  // sombra en tiempo real sobre los planetas no suma nada visualmente —
+  // solo generaba manchas oscuras con bordes duros y poco realistas.
+  mesh.castShadow = false;
+  mesh.receiveShadow = false;
 
   // Datos por-instancia que necesitamos recalcular cada frame
   // (no se pueden derivar de la matriz ya guardada, así que los
@@ -72,14 +75,19 @@ export function createAsteroidBelt(count = 500) {
     const radius = THREE.MathUtils.lerp(BELT_INNER_RADIUS, BELT_OUTER_RADIUS, Math.random());
     const angle = Math.random() * Math.PI * 2;
     const height = (Math.random() - 0.5) * BELT_THICKNESS;
-    const scale = THREE.MathUtils.lerp(0.4, 2.2, Math.random());
+    // Antes llegaban hasta 2.2*1.3 ≈ 2.9 unidades — casi tan grandes como
+    // Mercurio (radio ~1.36). Un asteroide real es una roca, no un planeta:
+    // el rango correcto es muchísimo más chico.
+    const scale = THREE.MathUtils.lerp(0.08, 0.35, Math.random());
     // Escalado no-uniforme por eje: mismo icosaedro base, silueta distinta cada vez
     const scaleX = scale * THREE.MathUtils.lerp(0.7, 1.3, Math.random());
     const scaleY = scale * THREE.MathUtils.lerp(0.7, 1.3, Math.random());
     const scaleZ = scale * THREE.MathUtils.lerp(0.7, 1.3, Math.random());
 
     // Kepler simplificado: a mayor radio orbital, menor velocidad angular
-    const orbitalSpeed = (0.15 / Math.pow(radius / BELT_INNER_RADIUS, 1.5)) * (Math.random() * 0.4 + 0.8);
+    // Factor ajustado para mantener el mismo ritmo que el resto del sistema
+    // (ver EARTH_YEAR_SECONDS en planets.js — antes 20s por año, ahora 48s)
+    const orbitalSpeed = (0.0625 / Math.pow(radius / BELT_INNER_RADIUS, 1.5)) * (Math.random() * 0.4 + 0.8);
     const spinSpeed = (Math.random() - 0.5) * 2;
 
     asteroidData.push({

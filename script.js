@@ -30,6 +30,9 @@ import { createDeepSpace } from "./space.js";
 import { createComets } from "./comets.js";
 import { buildClickableRegistry, setupClickDetection } from "./interaction.js";
 import { BODY_CONTENT } from "./content.js";
+import { createMeteorShower } from "./meteors.js";
+import { toggleAmbientAudio } from "./audio.js";
+import { createSpaceStations } from "./stations.js";
 
 /* ------------------------------------------------------------
    1. ESCENA, CÁMARA, RENDERER
@@ -247,6 +250,12 @@ scene.add(deepSpace.dust);
 const comets = createComets(scene);
 
 /* ------------------------------------------------------------
+   5e. METEOROS / ESTRELLAS FUGACES (FASE 14)
+   ------------------------------------------------------------ */
+
+const meteorShower = createMeteorShower(scene);
+
+/* ------------------------------------------------------------
    6. PANTALLA DE CARGA (simulada por ahora)
    -------------------------------------------------------------
    En FASE 1 esto se conecta al progreso real del THREE.LoadingManager
@@ -325,6 +334,7 @@ const bodyCountEl = document.getElementById("body-count");
    ------------------------------------------------------------ */
 
 let planets = [];
+let stations = { stations: [], update() {}, reset() {} };
 
 async function initScene() {
   const [sunResult, planetsResult] = await Promise.all([
@@ -336,13 +346,18 @@ async function initScene() {
   scene.add(sun.group);
   planets = planetsResult;
 
-  // Sol (1) + cada planeta + su luna si tiene
+  // FASE 15: la ISS y Tiangong cuelgan del pivote de orientación de la
+  // Tierra (no de su malla), igual que el anillo de Saturno y las lunas.
+  const earth = planets.find((planet) => planet.name === "Tierra");
+  stations = createSpaceStations(earth?.orientationPivot);
+
+  // Sol (1) + cada planeta + su luna si tiene + estaciones artificiales
   const moonCount = planets.reduce((sum, p) => sum + p.moons.length, 0);
-  bodyCountEl.textContent = String(1 + planets.length + moonCount);
+  bodyCountEl.textContent = String(1 + planets.length + moonCount + stations.stations.length);
 
   // FASE 7: ahora que todo existe en la escena, armamos el registro de
   // objetos "tocables" y activamos la detección de clics.
-  clickableRegistry = buildClickableRegistry(sun, planets);
+  clickableRegistry = buildClickableRegistry({ sun, planets, asteroidBelt, comets, deepSpace, stations });
   setupClickDetection(camera, renderer, clickableRegistry, handleBodyPicked);
 
   // FASE 10: preparamos la animación de "materialización" — el Sol y los
@@ -470,7 +485,7 @@ function computeFramingPosition(targetPosition, radius) {
 let isPlaying = true;
 let speedMultiplier = 1;
 let simTime = 0;
-const SPEED_STEPS = [1, 2, 10];
+const SPEED_STEPS = [0.25, 0.5, 1, 2, 10];
 
 let followEnabled = false;
 const followPrevPosition = new THREE.Vector3();
@@ -478,7 +493,7 @@ const followPrevPosition = new THREE.Vector3();
 function enableFollow() {
   if (!selectedBodyName) return;
   const entry = clickableRegistry.find((e) => e.name === selectedBodyName);
-  if (!entry) return;
+  if (!entry || entry.followable === false) return; // p.ej. cinturón de asteroides, nebulosas, galaxias
   entry.mesh.getWorldPosition(followPrevPosition);
   followEnabled = true;
   followButton.classList.add("active");
@@ -516,12 +531,28 @@ function selectBody(hit) {
   disableFollow();
 
   const worldPosition = new THREE.Vector3();
-  hit.mesh.getWorldPosition(worldPosition);
+
+  if (hit.isInstanced && hit.instanceId !== undefined) {
+    // El InstancedMesh en sí vive en el origen — no representa la posición
+    // de ningún asteroide en particular. Hay que leer la matriz de ESA
+    // instancia exacta y combinarla con la matriz mundial del mesh.
+    const instanceMatrix = new THREE.Matrix4();
+    hit.mesh.getMatrixAt(hit.instanceId, instanceMatrix);
+    worldPosition.setFromMatrixPosition(instanceMatrix);
+    worldPosition.applyMatrix4(hit.mesh.matrixWorld);
+  } else {
+    hit.mesh.getWorldPosition(worldPosition);
+  }
 
   const endPos = computeFramingPosition(worldPosition, hit.radius);
   startCameraTransition(endPos, worldPosition);
 
-  showPanel(hit.name);
+  if (appMode === "educativo") {
+    showPanel(hit.name);
+  } else {
+    hidePanel();
+    showQuickTag(hit.name);
+  }
   cameraStatusEl.textContent = `ENFOCADO: ${hit.name.toUpperCase()}`;
 }
 
@@ -762,6 +793,7 @@ function resetSimulation() {
   resetPlanets(planets);
   asteroidBelt.reset();
   comets.reset();
+  stations.reset();
 
   deselectBody();
 }
@@ -782,6 +814,54 @@ resetButton.addEventListener("click", resetSimulation);
 followButton.addEventListener("click", toggleFollow);
 freeViewButton.addEventListener("click", deselectBody);
 sunViewButton.addEventListener("click", viewSun);
+
+/* ------------------------------------------------------------
+   FASE 14: SONIDO AMBIENTAL
+   ------------------------------------------------------------ */
+
+const soundButton = document.getElementById("btn-sound");
+const soundIcon = document.getElementById("sound-icon");
+
+soundButton.addEventListener("click", () => {
+  const playing = toggleAmbientAudio();
+  soundIcon.textContent = playing ? "♫" : "♪";
+  soundButton.classList.toggle("active", playing);
+  soundButton.title = playing ? "Silenciar" : "Sonido ambiental";
+});
+
+/* ------------------------------------------------------------
+   FASE 14: MODO EDUCATIVO / EXPLORACIÓN
+   -------------------------------------------------------------
+   Educativo (por defecto): tocar un destino abre el panel completo
+   con todos los datos — pensado para aprender.
+   Exploración: tocar un destino solo muestra su nombre en una
+   etiqueta rápida y sigue volando la cámara ahí, sin abrir el
+   panel — pensado para recorrer el sistema rápido, sin tanta
+   lectura de por medio.
+   ------------------------------------------------------------ */
+
+let appMode = "educativo"; // "educativo" | "exploracion"
+
+const modeButton = document.getElementById("btn-mode");
+const modeLabel = document.getElementById("mode-label");
+const quickTag = document.getElementById("quick-tag");
+let quickTagTimeout = null;
+
+function showQuickTag(name) {
+  quickTag.textContent = name;
+  quickTag.classList.remove("hidden");
+  clearTimeout(quickTagTimeout);
+  quickTagTimeout = setTimeout(() => quickTag.classList.add("hidden"), 2400);
+}
+
+modeButton.addEventListener("click", () => {
+  appMode = appMode === "educativo" ? "exploracion" : "educativo";
+  modeLabel.textContent = appMode === "educativo" ? "Educativo" : "Exploración";
+  modeButton.classList.toggle("active", appMode === "exploracion");
+  // Al cambiar de modo con el panel abierto, lo cerramos para no dejar un
+  // estado ambiguo (panel completo abierto pero ya en modo exploración)
+  hidePanel();
+});
 
 /* ------------------------------------------------------------
    FASE 10: ANIMACIÓN DE ENTRADA ("materialización")
@@ -878,6 +958,8 @@ function animate() {
   asteroidBelt.update(effectiveDelta);
   deepSpace.update(simTime);
   comets.update(effectiveDelta);
+  meteorShower.update(effectiveDelta);
+  stations.update(effectiveDelta);
 
   if (planets.length > 0) {
     updatePlanets(planets, effectiveDelta);

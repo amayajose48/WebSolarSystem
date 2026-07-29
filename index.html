@@ -64,6 +64,14 @@
           <span class="hud-btn-icon">◐</span>
           <span class="hud-btn-label">Tema</span>
         </button>
+        <button class="hud-btn" id="btn-sound" title="Sonido ambiental">
+          <span class="hud-btn-icon" id="sound-icon">♪</span>
+          <span class="hud-btn-label">Sonido</span>
+        </button>
+        <button class="hud-btn" id="btn-mode" title="Modo educativo / exploración">
+          <span class="hud-btn-icon">◈</span>
+          <span class="hud-btn-label" id="mode-label">Educativo</span>
+        </button>
       </nav>
 
       <div class="hud-clock" id="hud-clock">
@@ -73,6 +81,9 @@
     </header>
 
     <div class="hud-hint" id="hud-hint">Tocá un planeta o luna para explorarlo</div>
+
+    <!-- Etiqueta rápida (modo exploración): nombre del destino sin abrir el panel completo -->
+    <div class="quick-tag hidden" id="quick-tag"></div>
 
     <!-- ============ BUSCADOR / SELECTOR DE DESTINO (FASE 8) ============ -->
     <div id="search-overlay" class="search-overlay hidden">

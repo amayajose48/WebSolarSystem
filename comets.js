@@ -20,6 +20,7 @@ const TRAIL_LENGTH = 70; // cantidad de puntos que forman la cola
 
 /**
  * Configuración orbital de cada cometa:
+ *  name     → nombre para mostrar en el panel de información al tocarlo
  *  a        → semieje mayor (tamaño de la órbita)
  *  e        → excentricidad (0 = círculo, cerca de 1 = muy alargada)
  *  incline  → inclinación del plano orbital, en radianes
@@ -30,9 +31,9 @@ const TRAIL_LENGTH = 70; // cantidad de puntos que forman la cola
  *  color    → tinte del núcleo y la cola
  */
 const COMET_CONFIGS = [
-  { a: 900, e: 0.92, incline: 0.35, phase: 0.0, L: 4200, color: 0xbfe9ff },
-  { a: 1400, e: 0.88, incline: -0.5, phase: 2.1, L: 6000, color: 0xdfffe0 },
-  { a: 650, e: 0.95, incline: 0.15, phase: 4.2, L: 2800, color: 0xffe8c9 },
+  { name: "Cometa Ártico", a: 900, e: 0.92, incline: 0.35, phase: 0.0, L: 4200, color: 0xbfe9ff },
+  { name: "Cometa Esmeralda", a: 1400, e: 0.88, incline: -0.5, phase: 2.1, L: 6000, color: 0xdfffe0 },
+  { name: "Cometa Dorado", a: 650, e: 0.95, incline: 0.15, phase: 4.2, L: 2800, color: 0xffe8c9 },
 ];
 
 function createGlowSprite(color) {
@@ -111,7 +112,9 @@ function createComet(config) {
     // 2da ley de Kepler simplificada: velocidad angular ∝ 1/r²
     // (conservación del momento angular — más cerca del Sol, gira más rápido)
     const angularSpeed = config.L / (distanceToSun * distanceToSun);
-    trueAnomaly += angularSpeed * delta * 0.00025;
+    // Factor ajustado para mantener el mismo ritmo que el resto del sistema
+    // (ver EARTH_YEAR_SECONDS en planets.js — antes 20s por año, ahora 48s)
+    trueAnomaly += angularSpeed * delta * 0.0001042;
 
     group.position.copy(position);
 
@@ -147,7 +150,7 @@ function createComet(config) {
   }
 
   group.add(trail);
-  return { group, update, reset };
+  return { name: config.name, group, glow, radius: 2.2, update, reset };
 }
 
 /**

@@ -10,12 +10,16 @@
 import * as THREE from "three";
 
 /**
- * Junta en un solo arreglo todos los objetos que se pueden "tocar":
- * el Sol, cada planeta y cada una de sus lunas. Cada entrada guarda
- * también su radio (para calcular qué tan cerca acercar la cámara)
- * y su nombre (para buscar el contenido educativo en content.js).
+ * Junta en un solo arreglo todos los objetos que se pueden "tocar": el Sol,
+ * cada planeta, cada luna, el cinturón de asteroides, los cometas, y las
+ * nebulosas/galaxias decorativas del fondo. Cada entrada guarda su radio
+ * (para calcular qué tan cerca acercar la cámara) y su nombre (para buscar
+ * el contenido educativo en content.js).
+ *
+ * El polvo espacial (space dust) queda afuera a propósito: es una capa
+ * puramente ambiental, no un "destino" identificable — no aporta tocarla.
  */
-export function buildClickableRegistry(sun, planets) {
+export function buildClickableRegistry({ sun, planets, asteroidBelt, comets, deepSpace, stations }) {
   const registry = [];
 
   if (sun) {
@@ -29,6 +33,42 @@ export function buildClickableRegistry(sun, planets) {
     });
   });
 
+  if (asteroidBelt) {
+    // Es un único InstancedMesh con cientos de instancias: cualquier
+    // asteroide que se toque cuenta como "el cinturón" — el marcado
+    // `isInstanced` le avisa a setupClickDetection que necesita resolver
+    // la posición exacta de ESA instancia particular, no del mesh entero
+    // (que vive en el origen y no representa la posición de ningún asteroide).
+    registry.push({
+      mesh: asteroidBelt.mesh,
+      name: "Cinturón de asteroides",
+      radius: 8,
+      isInstanced: true,
+      followable: false, // no hay "un" asteroide individual que seguir
+    });
+  }
+
+  if (comets) {
+    comets.comets.forEach((comet) => {
+      registry.push({ mesh: comet.glow, name: comet.name, radius: comet.radius });
+    });
+  }
+
+  if (stations) {
+    stations.stations.forEach((station) => {
+      registry.push({ mesh: station.glow, name: station.name, radius: station.radius });
+    });
+  }
+
+  if (deepSpace) {
+    deepSpace.nebulae.children.forEach((sprite) => {
+      registry.push({ mesh: sprite, name: "Nebulosa", radius: sprite.scale.x / 2, followable: false });
+    });
+    deepSpace.galaxies.children.forEach((sprite) => {
+      registry.push({ mesh: sprite, name: "Galaxia", radius: sprite.scale.x / 2, followable: false });
+    });
+  }
+
   return registry;
 }
 
@@ -40,7 +80,9 @@ export function buildClickableRegistry(sun, planets) {
  * competirían entre sí y sería frustrante de usar).
  *
  * onPick(hit | null) se llama con el objeto tocado, o null si el clic
- * fue sobre espacio vacío (señal para "deseleccionar").
+ * fue sobre espacio vacío (señal para "deseleccionar"). Si el objeto
+ * tocado es una instancia del cinturón de asteroides, `hit` además trae
+ * `instanceId` para que script.js pueda ubicar esa roca exacta en el espacio.
  */
 export function setupClickDetection(camera, renderer, registry, onPick) {
   const raycaster = new THREE.Raycaster();
@@ -49,7 +91,7 @@ export function setupClickDetection(camera, renderer, registry, onPick) {
 
   let downX = 0;
   let downY = 0;
-  const DRAG_THRESHOLD = 6; // píxeles
+  const DRAG_THRESHOLD = 10; // píxeles — un poco más laxo que con mouse, porque el dedo en pantallas táctiles naturalmente tiembla más al tocar
 
   function onPointerDown(event) {
     downX = event.clientX;
@@ -76,7 +118,16 @@ export function setupClickDetection(camera, renderer, registry, onPick) {
 
     const hitMesh = intersections[0].object;
     const hitEntry = registry.find((entry) => entry.mesh === hitMesh);
-    onPick(hitEntry ?? null);
+    if (!hitEntry) {
+      onPick(null);
+      return;
+    }
+
+    if (hitEntry.isInstanced) {
+      onPick({ ...hitEntry, instanceId: intersections[0].instanceId });
+    } else {
+      onPick(hitEntry);
+    }
   }
 
   renderer.domElement.addEventListener("pointerdown", onPointerDown);
