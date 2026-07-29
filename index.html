@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ORBITA — Explorador del Sistema Solar</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <meta name="description" content="Experiencia interactiva 3D del Sistema Solar." />
+
+  <!-- Tipografías: Space Grotesk (display), Inter (cuerpo), JetBrains Mono (datos/telemetría) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Import map: cargamos Three.js como módulo ES nativo, sin bundler -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- ============ PANTALLA DE CARGA ============ -->
+  <div id="loading-screen">
+    <div class="loading-grid"></div>
+    <div class="loading-content">
+      <div class="loading-logo">ORBITA</div>
+      <div class="loading-status" id="loading-status">INICIALIZANDO SISTEMA</div>
+      <div class="loading-bar-track">
+        <div class="loading-bar-fill" id="loading-bar-fill"></div>
+      </div>
+      <div class="loading-percent" id="loading-percent">0%</div>
+    </div>
+  </div>
+
+  <!-- ============ CANVAS 3D (Three.js renderiza aquí) ============ -->
+  <canvas id="scene-canvas"></canvas>
+
+  <!-- ============ INTERFAZ PRINCIPAL (HUD) ============ -->
+  <div id="app-ui" class="hidden">
+
+    <!-- Barra superior tipo "centro de control" -->
+    <header class="hud-topbar">
+      <div class="hud-brand">
+        <span class="hud-brand-mark">◎</span>
+        <span class="hud-brand-name">ORBITA</span>
+      </div>
+
+      <nav class="hud-nav">
+        <button class="hud-btn" data-action="search" title="Buscar planeta">
+          <span class="hud-btn-icon">⌕</span>
+          <span class="hud-btn-label">Buscar</span>
+        </button>
+        <button class="hud-btn" data-action="theme" title="Cambiar tema">
+          <span class="hud-btn-icon">◐</span>
+          <span class="hud-btn-label">Tema</span>
+        </button>
+      </nav>
+
+      <div class="hud-clock" id="hud-clock">
+        <span class="hud-clock-label">UTC</span>
+        <span class="hud-clock-value" id="hud-clock-value">00:00:00</span>
+      </div>
+    </header>
+
+    <div class="hud-hint" id="hud-hint">Tocá un planeta o luna para explorarlo</div>
+
+    <!-- ============ BUSCADOR / SELECTOR DE DESTINO (FASE 8) ============ -->
+    <div id="search-overlay" class="search-overlay hidden">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input
+          type="text"
+          id="search-input"
+          class="search-input"
+          placeholder="Buscar un destino… (Mercurio, Titán, Sol...)"
+          autocomplete="off"
+        />
+        <button class="search-close" id="search-close" title="Cerrar">✕</button>
+      </div>
+      <ul id="search-results" class="search-results"></ul>
+    </div>
+
+    <!-- ============ CONTROLES DE REPRODUCCIÓN (FASE 9) ============ -->
+    <div class="playback-dock">
+      <button class="dock-btn" id="btn-play-pause" title="Play / Pausa">
+        <span id="play-pause-icon">⏸</span>
+      </button>
+      <button class="dock-btn dock-btn-wide" id="btn-speed" title="Velocidad de simulación">
+        <span id="speed-label">1x</span>
+      </button>
+      <button class="dock-btn" id="btn-reset" title="Reiniciar simulación">↺</button>
+      <div class="dock-divider"></div>
+      <button class="dock-btn dock-btn-wide" id="btn-follow" title="Seguir el planeta seleccionado">
+        Seguir
+      </button>
+      <button class="dock-btn dock-btn-wide" id="btn-free-view" title="Vista libre">
+        Vista libre
+      </button>
+      <button class="dock-btn dock-btn-wide" id="btn-sun-view" title="Ver el Sol">
+        Vista del Sol
+      </button>
+    </div>
+
+    <!-- Indicador de estado inferior (placeholder, se completa en fases de controles) -->
+    <footer class="hud-statusbar">
+      <span class="hud-status-item">CÁMARA: <span class="mono" id="camera-status">LIBRE</span></span>
+      <span class="hud-status-item">CUERPOS RENDERIZADOS: <span class="mono" id="body-count">0</span></span>
+      <span class="hud-status-item">FPS: <span class="mono" id="fps-counter">--</span></span>
+    </footer>
+
+    <!-- ============ PANEL DE DESTINO (FASE 7) ============ -->
+    <!-- Se completa dinámicamente desde script.js usando content.js -->
+    <aside id="info-panel" class="info-panel hidden">
+      <button class="info-panel-close" id="info-panel-close" title="Cerrar">✕</button>
+
+      <div class="info-panel-body" id="info-panel-body">
+        <div class="info-panel-header">
+          <span class="info-panel-type" id="panel-type">—</span>
+          <h2 class="info-panel-name" id="panel-name">—</h2>
+        </div>
+
+        <dl class="info-panel-stats">
+          <div class="info-stat">
+            <dt>Temperatura</dt>
+            <dd id="panel-temperatura">—</dd>
+          </div>
+          <div class="info-stat">
+            <dt>Masa</dt>
+            <dd id="panel-masa">—</dd>
+          </div>
+          <div class="info-stat">
+            <dt>Diámetro</dt>
+            <dd id="panel-diametro">—</dd>
+          </div>
+          <div class="info-stat">
+            <dt>Distancia al Sol</dt>
+            <dd id="panel-distancia">—</dd>
+          </div>
+          <div class="info-stat">
+            <dt>Duración del día</dt>
+            <dd id="panel-dia">—</dd>
+          </div>
+          <div class="info-stat">
+            <dt>Duración del año</dt>
+            <dd id="panel-anio">—</dd>
+          </div>
+          <div class="info-stat info-stat-wide">
+            <dt>Lunas</dt>
+            <dd id="panel-lunas">—</dd>
+          </div>
+        </dl>
+
+        <div class="info-panel-curiosities">
+          <h3>Curiosidades</h3>
+          <ul id="panel-curiosidades"></ul>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>

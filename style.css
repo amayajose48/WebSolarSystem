@@ -1,0 +1,757 @@
+/* ============================================================
+   ORBITA — Sistema de diseño "Mission Control"
+   Tokens centralizados en :root para mantener consistencia
+   ============================================================ */
+
+:root {
+  /* --- Color --- */
+  --bg-void: #05070d;         /* fondo del espacio profundo */
+  --bg-panel: #0a0e1a;        /* base de paneles */
+  --panel-glass: rgba(12, 17, 29, 0.72);
+  --panel-border: rgba(79, 209, 255, 0.18);
+  --panel-border-hover: rgba(79, 209, 255, 0.4);
+
+  --accent-cyan: #4fd1ff;     /* telemetría / acento primario */
+  --accent-cyan-dim: rgba(79, 209, 255, 0.5);
+  --accent-amber: #ff8c42;    /* alerta / acento secundario, uso mínimo */
+
+  --text-primary: #e8edf5;
+  --text-dim: #7c8699;
+  --text-faint: #4a5568;
+
+  /* --- Tipografía --- */
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* --- Layout --- */
+  --topbar-height: 64px;
+  --statusbar-height: 32px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+
+  /* --- Motion --- */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================================
+   TEMA CLARO (FASE 8)
+   -------------------------------------------------------------
+   Mismas variables, otros valores. El HUD y los paneles se
+   adaptan solos porque TODO su color sale de estas variables —
+   la escena 3D (espacio, planetas) se mantiene oscura a propósito,
+   como una ventana real hacia el espacio.
+   ------------------------------------------------------------ */
+:root.light-theme {
+  --bg-panel: #eef2f8;
+  --panel-glass: rgba(238, 242, 248, 0.82);
+  --panel-border: rgba(30, 90, 130, 0.18);
+  --panel-border-hover: rgba(30, 90, 130, 0.35);
+
+  --accent-cyan: #0077b3;
+  --accent-cyan-dim: rgba(0, 119, 179, 0.35);
+
+  --text-primary: #182233;
+  --text-dim: #4b5768;
+  --text-faint: #8a95a6;
+}
+
+/* ============ Reset básico ============ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-void);
+  font-family: var(--font-body);
+  color: var(--text-primary);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================================================
+   CANVAS — el renderer de Three.js ocupa toda la pantalla
+   ============================================================ */
+#scene-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ============================================================
+   PANTALLA DE CARGA
+   ============================================================ */
+#loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  transition: opacity 0.8s var(--ease-smooth), visibility 0.8s var(--ease-smooth);
+}
+
+#loading-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Retícula de fondo sutil: refuerza la identidad "blueprint / HUD" */
+.loading-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 209, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 209, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at center, black 0%, transparent 75%);
+}
+
+.loading-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.loading-logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.5rem;
+  letter-spacing: 0.35em;
+  padding-left: 0.35em; /* compensa el letter-spacing final */
+  color: var(--text-primary);
+  text-shadow: 0 0 24px var(--accent-cyan-dim);
+}
+
+.loading-status {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--text-dim);
+}
+
+.loading-bar-track {
+  width: 260px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loading-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent-cyan), #ffffff);
+  box-shadow: 0 0 12px var(--accent-cyan);
+  transition: width 0.25s var(--ease-smooth);
+}
+
+.loading-percent {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+}
+
+/* ============================================================
+   HUD — Interfaz principal
+   ============================================================ */
+#app-ui {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none; /* el canvas debe recibir los gestos del mouse */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  opacity: 0;
+  animation: hud-reveal 1s var(--ease-smooth) 0.2s forwards;
+}
+
+@keyframes hud-reveal {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Barra superior --- */
+.hud-topbar {
+  pointer-events: auto;
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--panel-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-brand-mark {
+  color: var(--accent-cyan);
+  font-size: 1.1rem;
+  filter: drop-shadow(0 0 6px var(--accent-cyan-dim));
+}
+
+.hud-brand-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  font-size: 0.95rem;
+}
+
+.hud-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.hud-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  transition: all 0.25s var(--ease-smooth);
+}
+
+.hud-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--panel-border-hover);
+  background: rgba(79, 209, 255, 0.06);
+}
+
+.hud-btn-icon {
+  font-size: 0.95rem;
+  color: var(--accent-cyan);
+}
+
+.hud-clock {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-mono);
+}
+
+.hud-clock-label {
+  font-size: 0.65rem;
+  color: var(--text-faint);
+  letter-spacing: 0.1em;
+}
+
+.hud-clock-value {
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  letter-spacing: 0.05em;
+}
+
+/* --- Barra de estado inferior --- */
+.hud-statusbar {
+  pointer-events: auto;
+  height: var(--statusbar-height);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 0 24px;
+  background: var(--panel-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--panel-border);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+.hud-status-item .mono {
+  color: var(--accent-cyan);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 720px) {
+  .hud-topbar {
+    padding: 0 14px;
+  }
+  .hud-btn-label {
+    display: none; /* solo iconos en móvil para ahorrar espacio */
+  }
+  .hud-brand-name {
+    font-size: 0.8rem;
+    letter-spacing: 0.18em;
+  }
+  .hud-statusbar {
+    gap: 16px;
+    padding: 0 14px;
+    font-size: 0.6rem;
+  }
+  .hud-status-item:nth-child(2) {
+    display: none; /* ocultamos "cuerpos renderizados" en pantallas chicas */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app-ui,
+  #loading-screen {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============================================================
+   HINT DE INTERACCIÓN
+   ============================================================ */
+.hud-hint {
+  position: absolute;
+  top: calc(var(--topbar-height) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--panel-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  animation: hint-pulse 3s ease-in-out infinite;
+  transition: opacity 0.5s var(--ease-smooth);
+}
+
+.hud-hint.hidden {
+  opacity: 0;
+}
+
+@keyframes hint-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ============================================================
+   PANEL DE DESTINO (FASE 7)
+   ============================================================ */
+.info-panel {
+  position: fixed;
+  top: var(--topbar-height);
+  right: 0;
+  bottom: var(--statusbar-height);
+  width: 360px;
+  max-width: 88vw;
+  pointer-events: auto;
+  overflow-y: auto;
+  padding: 28px 26px 32px;
+  background: var(--panel-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-left: 1px solid var(--panel-border);
+  transform: translateX(0);
+  transition: transform 0.5s var(--ease-smooth), opacity 0.5s var(--ease-smooth);
+  z-index: 20;
+}
+
+.info-panel.hidden {
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.info-panel-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text-dim);
+  border: 1px solid var(--panel-border);
+  transition: all 0.2s var(--ease-smooth);
+}
+
+.info-panel-close:hover {
+  color: var(--text-primary);
+  border-color: var(--panel-border-hover);
+  background: rgba(79, 209, 255, 0.08);
+}
+
+.info-panel-header {
+  margin-bottom: 22px;
+  padding-right: 36px;
+}
+
+.info-panel-type {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  margin-bottom: 6px;
+}
+
+.info-panel-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.6rem;
+  line-height: 1.15;
+}
+
+.info-panel-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+  margin-bottom: 26px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.info-stat dt {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 3px;
+}
+
+.info-stat dd {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.info-stat-wide {
+  grid-column: 1 / -1;
+}
+
+.info-panel-curiosities h3 {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--accent-cyan);
+  margin-bottom: 12px;
+}
+
+.info-panel-curiosities ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-panel-curiosities li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+.info-panel-curiosities li::before {
+  content: "◆";
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  font-size: 0.55rem;
+  color: var(--accent-cyan);
+}
+
+@media (max-width: 720px) {
+  .info-panel {
+    width: 100%;
+    max-width: 100%;
+    top: auto;
+    bottom: var(--statusbar-height);
+    height: 70vh;
+    border-left: none;
+    border-top: 1px solid var(--panel-border);
+  }
+  .hud-hint {
+    font-size: 0.6rem;
+    padding: 6px 14px;
+  }
+}
+
+/* ============================================================
+   BUSCADOR / SELECTOR DE DESTINO (FASE 8)
+   ============================================================ */
+.search-overlay {
+  position: absolute;
+  top: calc(var(--topbar-height) + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  max-width: 90vw;
+  max-height: 60vh;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.3s var(--ease-smooth), transform 0.3s var(--ease-smooth);
+  z-index: 30;
+}
+
+.search-overlay.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
+  pointer-events: none;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.search-icon {
+  color: var(--accent-cyan);
+  font-size: 1rem;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+
+.search-input::placeholder {
+  color: var(--text-faint);
+}
+
+.search-close {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--text-dim);
+  transition: all 0.2s var(--ease-smooth);
+}
+
+.search-close:hover {
+  color: var(--text-primary);
+  background: rgba(79, 209, 255, 0.08);
+}
+
+.search-results {
+  list-style: none;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s var(--ease-smooth);
+}
+
+.search-result-item:hover,
+.search-result-item.active {
+  background: rgba(79, 209, 255, 0.1);
+}
+
+.search-result-name {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.search-result-type {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.search-empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-faint);
+}
+
+/* ============================================================
+   BARRA DE CONTROLES DE REPRODUCCIÓN (FASE 9)
+   ============================================================ */
+.playback-dock {
+  position: absolute;
+  bottom: calc(var(--statusbar-height) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  pointer-events: auto;
+  background: var(--panel-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+}
+
+.dock-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.03em;
+  transition: all 0.2s var(--ease-smooth);
+}
+
+.dock-btn:hover {
+  color: var(--text-primary);
+  background: rgba(79, 209, 255, 0.08);
+}
+
+.dock-btn.active {
+  color: var(--bg-void);
+  background: var(--accent-cyan);
+}
+
+.dock-btn-wide {
+  padding: 0 16px;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+}
+
+#btn-play-pause,
+#btn-reset {
+  font-size: 1rem;
+}
+
+.dock-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--panel-border);
+  margin: 0 2px;
+}
+
+@media (max-width: 720px) {
+  .playback-dock {
+    max-width: 94vw;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .dock-btn-wide {
+    padding: 0 12px;
+    font-size: 0.68rem;
+  }
+}
+
+/* ============================================================
+   FASE 10: ANIMACIONES CINEMATOGRÁFICAS
+   -------------------------------------------------------------
+   "Nada debe aparecer de golpe": transición suave de color al
+   cambiar de tema, cross-fade del contenido del panel al cambiar
+   de destino, y micro-feedback táctil en todos los botones.
+   ============================================================ */
+
+/* Transición de tema: todo lo que usa colores de variables CSS
+   ahora interpola color/fondo/borde en vez de saltar de golpe. */
+.hud-topbar,
+.hud-statusbar,
+.hud-hint,
+.hud-btn,
+.info-panel,
+.search-overlay,
+.search-input,
+.search-result-item,
+.playback-dock,
+.dock-btn,
+.info-panel-close,
+.search-close {
+  transition-property: background-color, border-color, color, transform, opacity;
+  transition-duration: 0.4s;
+  transition-timing-function: var(--ease-smooth);
+}
+/* Los paneles que además se deslizan (transform) necesitan su propia
+   duración más corta para esa parte, si no la entrada/salida se siente lenta */
+.info-panel,
+.search-overlay {
+  transition-duration: 0.4s, 0.4s, 0.4s, 0.5s, 0.5s;
+}
+
+/* Cross-fade del contenido del panel al cambiar de destino con el panel
+   ya abierto (en vez de que el texto se reemplace de golpe) */
+.info-panel-body {
+  transition: opacity 0.18s var(--ease-smooth);
+}
+.info-panel-body.content-fading {
+  opacity: 0;
+}
+
+/* Feedback táctil: un pequeño "hundimiento" al tocar, para que la
+   interfaz se sienta física en vez de plana */
+.hud-btn:active,
+.dock-btn:active,
+.info-panel-close:active,
+.search-close:active,
+.search-result-item:active {
+  transform: scale(0.94);
+}
