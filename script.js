@@ -144,10 +144,10 @@ scene.add(sunLight);
 
 const flareLoader = new THREE.TextureLoader();
 const flareTextureMain = flareLoader.load(
-  "https://unpkg.com/three@0.160.0/examples/textures/lensflare/lensflare0.png"
+  "./textures/lensflare0.png"
 );
 const flareTextureRing = flareLoader.load(
-  "https://unpkg.com/three@0.160.0/examples/textures/lensflare/lensflare3.png"
+  "./textures/lensflare3.png"
 );
 
 const lensflare = new Lensflare();
@@ -545,7 +545,13 @@ function selectBody(hit) {
   }
 
   const endPos = computeFramingPosition(worldPosition, hit.radius);
-  startCameraTransition(endPos, worldPosition);
+
+  // Nebulosas/galaxias: son un telón de fondo plano, no un objeto 3D real
+  // que tenga sentido "visitar" de cerca — la cámara se queda donde está,
+  // solo se muestra la información.
+  if (hit.zoomable !== false) {
+    startCameraTransition(endPos, worldPosition);
+  }
 
   if (appMode === "educativo") {
     showPanel(hit.name);

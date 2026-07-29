@@ -51,7 +51,10 @@ export function createAsteroidBelt(count = 500) {
   const material = new THREE.MeshStandardMaterial({
     roughness: 1,
     metalness: 0.1,
-    vertexColors: false,
+    // BUG corregido: estaba en `false`, así que los colores por instancia
+    // (mesh.setColorAt más abajo) se ignoraban por completo — por eso se
+    // veían negros en vez de sus tonos grises/marrones.
+    vertexColors: true,
   });
 
   const mesh = new THREE.InstancedMesh(geometry, material, count);

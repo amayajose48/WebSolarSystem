@@ -62,10 +62,22 @@ export function buildClickableRegistry({ sun, planets, asteroidBelt, comets, dee
 
   if (deepSpace) {
     deepSpace.nebulae.children.forEach((sprite) => {
-      registry.push({ mesh: sprite, name: "Nebulosa", radius: sprite.scale.x / 2, followable: false });
+      registry.push({
+        mesh: sprite,
+        name: "Nebulosa",
+        radius: sprite.scale.x / 2,
+        followable: false,
+        zoomable: false, // es un sprite plano de fondo — acercarse mucho solo se ve como un borrón
+      });
     });
     deepSpace.galaxies.children.forEach((sprite) => {
-      registry.push({ mesh: sprite, name: "Galaxia", radius: sprite.scale.x / 2, followable: false });
+      registry.push({
+        mesh: sprite,
+        name: "Galaxia",
+        radius: sprite.scale.x / 2,
+        followable: false,
+        zoomable: false,
+      });
     });
   }
 
