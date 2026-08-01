@@ -137,18 +137,16 @@ scene.add(sunLight);
    -------------------------------------------------------------
    Los destellos ópticos clásicos que aparecen cuando una fuente de
    luz muy brillante queda casi de frente a la "cámara" — igual que
-   pasa con una lente de cámara real. Se usan las texturas de
-   ejemplo oficiales de Three.js (mismo proyecto open source que
-   ya estamos usando para todo el motor 3D).
+   pasa con una lente de cámara real. Las texturas son las mismas
+   que usa oficialmente el ejemplo de Three.js, pero servidas desde
+   la carpeta local textures/ (no desde una URL externa) — así el
+   proyecto no depende de que un CDN esté disponible el día de la
+   presentación.
    ------------------------------------------------------------ */
 
 const flareLoader = new THREE.TextureLoader();
-const flareTextureMain = flareLoader.load(
-  "./textures/lensflare0.png"
-);
-const flareTextureRing = flareLoader.load(
-  "./textures/lensflare3.png"
-);
+const flareTextureMain = flareLoader.load("textures/lensflare0.png");
+const flareTextureRing = flareLoader.load("textures/lensflare3.png");
 
 const lensflare = new Lensflare();
 lensflare.addElement(new LensflareElement(flareTextureMain, 700, 0, sunLight.color));

@@ -55,6 +55,14 @@ export function createAsteroidBelt(count = 500) {
     // (mesh.setColorAt más abajo) se ignoraban por completo — por eso se
     // veían negros en vez de sus tonos grises/marrones.
     vertexColors: true,
+    // Con una sola luz puntual, la cara de la roca que no mira al Sol
+    // queda completamente negra (es físicamente correcto, pero se ve mal
+    // con cientos de rocas pequeñas). Un mínimo de auto-iluminación evita
+    // el negro absoluto sin importar el ángulo, a costa de un poco de
+    // precisión física — la misma clase de concesión que ya hicimos con
+    // la luz del Sol (decay=0) por la misma razón: que se vea bien siempre.
+    emissive: 0x2a241d,
+    emissiveIntensity: 0.5,
   });
 
   const mesh = new THREE.InstancedMesh(geometry, material, count);
@@ -81,7 +89,9 @@ export function createAsteroidBelt(count = 500) {
     // Antes llegaban hasta 2.2*1.3 ≈ 2.9 unidades — casi tan grandes como
     // Mercurio (radio ~1.36). Un asteroide real es una roca, no un planeta:
     // el rango correcto es muchísimo más chico.
-    const scale = THREE.MathUtils.lerp(0.08, 0.35, Math.random());
+    // Punto medio: la versión anterior (0.4-2.2) parecía casi-planetas;
+    // esta (0.08-0.35) quedó casi invisible. Este rango es un balance.
+    const scale = THREE.MathUtils.lerp(0.18, 0.65, Math.random());
     // Escalado no-uniforme por eje: mismo icosaedro base, silueta distinta cada vez
     const scaleX = scale * THREE.MathUtils.lerp(0.7, 1.3, Math.random());
     const scaleY = scale * THREE.MathUtils.lerp(0.7, 1.3, Math.random());

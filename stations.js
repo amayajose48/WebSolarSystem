@@ -14,21 +14,22 @@
    ============================================================ */
 
 import * as THREE from "three";
-import { EARTH_DAY_SECONDS } from "./planets.js";
 import { createRadialGlowTexture } from "./utils.js";
 
 const STATION_CONFIGS = [
   {
     name: "Estación Espacial Internacional",
-    distanceUnits: 6.4, // más cerca que la Luna (10): son satélites de órbita baja, no un cuerpo celeste
-    orbitalMinutes: 92, // periodo orbital real
+    distanceUnits: 4.2, // el radio de la Tierra es ~3.54 — esto la deja en órbita baja, bien cerca de la superficie
+    orbitalMinutes: 92, // periodo orbital REAL (dato para el panel de información, no maneja la animación)
+    simulatedOrbitSeconds: 9, // a velocidad 1x, cuánto tarda en dar una vuelta visible en la simulación
     bodyColor: 0xd8d8d8,
     panelColor: 0x16305c,
   },
   {
     name: "Estación Espacial China (Tiangong)",
-    distanceUnits: 7.6,
+    distanceUnits: 4.6,
     orbitalMinutes: 90,
+    simulatedOrbitSeconds: 10.5, // ligeramente distinto al de la ISS para que no queden siempre alineadas
     bodyColor: 0xe8e4d8,
     panelColor: 0x123a52,
   },
@@ -111,29 +112,45 @@ function createTiangongModel(bodyColor, panelColor) {
  * `earthOrientationPivot` viene de planets.js (mismo mecanismo que el
  * anillo de Saturno: FASE 15 lo expone para poder usarlo acá también).
  */
+
 export function createSpaceStations(earthOrientationPivot) {
   if (!earthOrientationPivot) {
     return { stations: [], update() {}, reset() {} };
   }
 
+  // === 1. LIMPIEZA DE INSTANCIAS ANTERIORES ===
+  // Buscamos y removemos del pivote de la Tierra solo los objetos llamados "pivote-estacion"
+  const antiguasEstaciones = earthOrientationPivot.children.filter(
+    (child) => child.name === "pivote-estacion"
+  );
+  antiguasEstaciones.forEach((oldStation) => {
+    earthOrientationPivot.remove(oldStation);
+  });
+  // ============================================
+
   const stations = STATION_CONFIGS.map((config, index) => {
     const pivot = new THREE.Object3D();
+    
+    // === 2. ASIGNAR NOMBRE AL PIVOTE ===
+    // Esto nos permite identificarlo en la limpieza de arriba cuando el código se recargue
+    pivot.name = "pivote-estacion"; 
+    // ===================================
+
     const model = index === 0 ? createISSModel(config.bodyColor, config.panelColor) : createTiangongModel(config.bodyColor, config.panelColor);
     model.position.x = config.distanceUnits;
-    // Escala grande a propósito: no es a escala real (la ISS real sería un
-    // punto invisible), es para que la silueta (truss, paneles) se reconozca
-    // bien al acercar la cámara — el objetivo es que SE VEA la figura, no
-    // solo un brillo.
-    model.scale.setScalar(3.2);
+    
+    model.scale.setScalar(0.5);
+    // A esta escala tan chica, las piezas finitas (truss, paneles) generan
+    // auto-sombras mal calculadas con una luz pensada para objetos del
+    // tamaño de un planeta — eso se veía como una silueta "duplicada".
+    // Mismo tipo de ajuste que ya hicimos con el cinturón de asteroides.
     model.traverse((child) => {
       if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+        child.castShadow = false;
+        child.receiveShadow = false;
       }
     });
 
-    // Halo pequeño y tenue: solo ayuda a ubicarla de lejos y sirve de blanco
-    // de clic — a propósito chico, para no tapar la silueta del modelo real.
     const glow = new THREE.Sprite(
       new THREE.SpriteMaterial({
         map: createRadialGlowTexture(64, [
@@ -146,7 +163,7 @@ export function createSpaceStations(earthOrientationPivot) {
         depthWrite: false,
       })
     );
-    glow.scale.set(1.6, 1.6, 1);
+    glow.scale.set(0.6, 0.6, 1);
     glow.position.copy(model.position);
 
     pivot.add(model);
@@ -156,16 +173,26 @@ export function createSpaceStations(earthOrientationPivot) {
     pivot.rotation.y = initialAngle;
     earthOrientationPivot.add(pivot);
 
-    const orbitalPeriodDays = config.orbitalMinutes / (24 * 60);
-    const orbitalAngularSpeed = (2 * Math.PI) / (EARTH_DAY_SECONDS * orbitalPeriodDays);
+    // Nota importante: NO usamos la misma compresión de tiempo que los
+    // planetas (EARTH_DAY_SECONDS). Esa proporción está pensada para
+    // períodos de DÍAS/AÑOS — aplicada a los 92 minutos reales de la ISS,
+    // daba una velocidad angular absurda (más de una vuelta completa por
+    // frame), que se veía como si hubiera varias estaciones a la vez
+    // (un efecto estroboscópico). Acá usamos directamente cuántos segundos
+    // reales debe tardar una vuelta visible en la simulación.
+    const orbitalAngularSpeed = (2 * Math.PI) / config.simulatedOrbitSeconds;
 
-    return { name: config.name, pivot, model, glow, radius: 3.5, initialAngle, orbitalAngularSpeed };
+    // radius se usa para calcular a qué distancia acercarse al hacer clic
+    // (ver computeFramingPosition en script.js) — ajustado a la escala 0.5
+    // actual (antes decía 3.5, de cuando el modelo era mucho más grande).
+    return { name: config.name, pivot, model, glow, radius: 0.6, initialAngle, orbitalAngularSpeed };
   });
 
+  // Asegúrate de mantener los bloques de update y reset al final de tu función original:
   function update(delta, speedMultiplier = 1) {
     stations.forEach((station) => {
       station.pivot.rotation.y += station.orbitalAngularSpeed * delta * speedMultiplier;
-      station.model.rotation.y += delta * 0.3 * speedMultiplier; // giro lento sobre sí misma, detalle visual
+      station.model.rotation.y += delta * 0.3 * speedMultiplier; 
     });
   }
 
