@@ -72,6 +72,14 @@
           <span class="hud-btn-icon">◈</span>
           <span class="hud-btn-label" id="mode-label">Educativo</span>
         </button>
+        <button class="hud-btn" id="btn-team" title="Sobre el equipo">
+          <span class="hud-btn-icon">ⓘ</span>
+          <span class="hud-btn-label">Equipo</span>
+        </button>
+        <button class="hud-btn" id="btn-help" title="Cómo usar ORBITA">
+          <span class="hud-btn-icon">?</span>
+          <span class="hud-btn-label">Ayuda</span>
+        </button>
       </nav>
 
       <div class="hud-clock" id="hud-clock">
@@ -84,6 +92,57 @@
 
     <!-- Etiqueta rápida (modo exploración): nombre del destino sin abrir el panel completo -->
     <div class="quick-tag hidden" id="quick-tag"></div>
+
+    <!-- ============ MODAL: SOBRE EL EQUIPO ============ -->
+    <div id="team-overlay" class="modal-overlay hidden">
+      <div class="modal-card">
+        <button class="modal-close-btn" id="team-close" title="Cerrar">✕</button>
+        <div class="team-header">
+          <span class="team-project-name">ORBITA</span>
+          <span class="team-category" id="team-category">—</span>
+        </div>
+        <dl class="team-stats">
+          <div class="team-stat">
+            <dt>Equipo</dt>
+            <dd id="team-nombre">—</dd>
+          </div>
+          <div class="team-stat">
+            <dt>Centro educativo</dt>
+            <dd id="team-colegio">—</dd>
+          </div>
+          <div class="team-stat">
+            <dt>Capitán/a</dt>
+            <dd id="team-capitan">—</dd>
+          </div>
+          <div class="team-stat">
+            <dt>Docente entrenador/a</dt>
+            <dd id="team-docente">—</dd>
+          </div>
+          <div class="team-stat team-stat-wide">
+            <dt>Integrantes</dt>
+            <dd id="team-integrantes">—</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- ============ MODAL: INTRODUCCIÓN / AYUDA ============ -->
+    <div id="intro-overlay" class="modal-overlay hidden">
+      <div class="modal-card">
+        <button class="modal-close-btn" id="intro-close" title="Cerrar">✕</button>
+        <div class="intro-title">Bienvenido a ORBITA</div>
+        <div class="intro-subtitle">Una guía turística interactiva del Sistema Solar</div>
+        <ul class="intro-list">
+          <li><span class="intro-icon">✋</span><span>Arrastrá con el mouse (o el dedo) para girar la cámara alrededor de la escena.</span></li>
+          <li><span class="intro-icon">🔍</span><span>Usá la rueda del mouse (o pellizcá en pantalla táctil) para acercar o alejar.</span></li>
+          <li><span class="intro-icon">◉</span><span>Tocá cualquier planeta, luna, cometa, estación espacial, asteroide, nebulosa o galaxia para ver su información.</span></li>
+          <li><span class="intro-icon">⌕</span><span>Usá el buscador (arriba) para ir directo a un destino por su nombre.</span></li>
+          <li><span class="intro-icon">⏸</span><span>Abajo tenés los controles: Play/Pausa, velocidad, Reset, Seguir y Vista libre.</span></li>
+          <li><span class="intro-icon">◈</span><span>El modo Educativo muestra toda la información al tocar un destino; el modo Exploración solo su nombre, para recorrer más rápido.</span></li>
+        </ul>
+        <button class="intro-start-btn" id="intro-start-btn">Empezar a explorar</button>
+      </div>
+    </div>
 
     <!-- ============ BUSCADOR / SELECTOR DE DESTINO (FASE 8) ============ -->
     <div id="search-overlay" class="search-overlay hidden">
@@ -117,9 +176,6 @@
       <button class="dock-btn dock-btn-wide" id="btn-free-view" title="Vista libre">
         Vista libre
       </button>
-      <button class="dock-btn dock-btn-wide" id="btn-sun-view" title="Ver el Sol">
-        Vista del Sol
-      </button>
     </div>
 
     <!-- Indicador de estado inferior (placeholder, se completa en fases de controles) -->
@@ -135,6 +191,8 @@
       <button class="info-panel-close" id="info-panel-close" title="Cerrar">✕</button>
 
       <div class="info-panel-body" id="info-panel-body">
+        <img class="info-panel-image hidden" id="panel-image" alt="" />
+
         <div class="info-panel-header">
           <span class="info-panel-type" id="panel-type">—</span>
           <h2 class="info-panel-name" id="panel-name">—</h2>

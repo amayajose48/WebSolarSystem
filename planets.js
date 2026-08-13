@@ -244,6 +244,16 @@ export const PLANET_DATA = [
 
 export const EARTH_YEAR_SECONDS = 48;
 export const EARTH_DAY_SECONDS = EARTH_YEAR_SECONDS / 365.25;
+// La rotación sobre el propio eje (horas) NO puede usar la misma escala que
+// la traslación (días/años): un planeta gira sobre sí mismo en horas, una
+// unidad muchísimo más chica que "un año". Aplicarle la misma compresión
+// daba velocidades de giro absurdas — Júpiter, con su rotación real más
+// rápida del Sistema Solar (9.9h), llegaba a más de una vuelta completa
+// POR FRAME, y se veía como un parpadeo en vez de un giro. Esta escala
+// aparte mantiene la velocidad relativa real entre planetas (Júpiter sigue
+// girando más rápido que la Tierra) pero a un ritmo que se puede seguir
+// con la vista.
+export const VISUAL_ROTATION_SECONDS = 8;
 
 // loadTextureOrNull ahora vive en utils.js — la usan también sun.js y comets.js
 
@@ -327,7 +337,7 @@ export async function createPlanet(data) {
   // - Rotación: sí usamos las horas reales, para que Júpiter gire notablemente
   //   más rápido que la Tierra y Venus/Urano giren al revés.
   const orbitalAngularSpeed = (2 * Math.PI) / (EARTH_YEAR_SECONDS * Math.pow(data.distanceAU, 1.5));
-  const rotationAngularSpeed = (2 * Math.PI) / (EARTH_DAY_SECONDS * (data.rotationHours / 24));
+  const rotationAngularSpeed = (2 * Math.PI) / (VISUAL_ROTATION_SECONDS * (data.rotationHours / 24));
 
   return {
     name: data.name,

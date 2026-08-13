@@ -25,7 +25,7 @@ import * as THREE from "three";
  * Nube de nebulosa: varios blobs radiales superpuestos con un tinte
  * de color, para simular las formas irregulares de gas y polvo real.
  */
-function createNebulaTexture(colorA, colorB) {
+function createNebulaTexture(colorA, colorB, colorCore) {
   const size = 512;
   const canvas = document.createElement("canvas");
   canvas.width = size;
@@ -33,18 +33,23 @@ function createNebulaTexture(colorA, colorB) {
   const ctx = canvas.getContext("2d");
 
   ctx.clearRect(0, 0, size, size);
+  // Un desenfoque general sobre todo lo que se dibuje a partir de acá:
+  // es lo que le da el aspecto "de gas" difuso en vez de manchas con
+  // bordes definidos, que era el problema de la versión anterior.
+  ctx.filter = "blur(14px)";
 
-  // Varios "blobs" desplazados y superpuestos → forma irregular, no un círculo perfecto
-  const blobCount = 5;
-  for (let i = 0; i < blobCount; i++) {
-    const cx = size / 2 + (Math.random() - 0.5) * size * 0.4;
-    const cy = size / 2 + (Math.random() - 0.5) * size * 0.4;
-    const r = size * (0.25 + Math.random() * 0.25);
+  // Capa base: varios blobs grandes y muy tenues, para una nube de fondo
+  // amplia y suave antes de agregar detalle encima.
+  for (let i = 0; i < 6; i++) {
+    const cx = size / 2 + (Math.random() - 0.5) * size * 0.5;
+    const cy = size / 2 + (Math.random() - 0.5) * size * 0.5;
+    const r = size * (0.28 + Math.random() * 0.22);
     const color = i % 2 === 0 ? colorA : colorB;
 
     const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    gradient.addColorStop(0, `rgba(${color}, 0.35)`);
-    gradient.addColorStop(0.5, `rgba(${color}, 0.15)`);
+    gradient.addColorStop(0, `rgba(${color}, 0.22)`);
+    gradient.addColorStop(0.4, `rgba(${color}, 0.12)`);
+    gradient.addColorStop(0.75, `rgba(${color}, 0.04)`);
     gradient.addColorStop(1, `rgba(${color}, 0)`);
 
     ctx.fillStyle = gradient;
@@ -53,6 +58,44 @@ function createNebulaTexture(colorA, colorB) {
     ctx.fill();
   }
 
+  // Capa de detalle: blobs más chicos y variados, para textura interna
+  // (zonas más densas, "filamentos" de gas) por encima de la base.
+  for (let i = 0; i < 10; i++) {
+    const cx = size / 2 + (Math.random() - 0.5) * size * 0.65;
+    const cy = size / 2 + (Math.random() - 0.5) * size * 0.65;
+    const r = size * (0.06 + Math.random() * 0.14);
+    const color = Math.random() > 0.5 ? colorA : colorB;
+
+    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    gradient.addColorStop(0, `rgba(${color}, 0.28)`);
+    gradient.addColorStop(0.6, `rgba(${color}, 0.1)`);
+    gradient.addColorStop(1, `rgba(${color}, 0)`);
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Núcleo brillante: 1-2 puntos más claros, simulando zonas de formación
+  // estelar activa (el punto más luminoso de una nebulosa real).
+  const coreCount = 1 + Math.round(Math.random());
+  for (let i = 0; i < coreCount; i++) {
+    const cx = size / 2 + (Math.random() - 0.5) * size * 0.3;
+    const cy = size / 2 + (Math.random() - 0.5) * size * 0.3;
+    const r = size * (0.05 + Math.random() * 0.05);
+
+    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    gradient.addColorStop(0, `rgba(${colorCore}, 0.5)`);
+    gradient.addColorStop(1, `rgba(${colorCore}, 0)`);
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.filter = "none";
   return new THREE.CanvasTexture(canvas);
 }
 
@@ -104,10 +147,10 @@ function createGalaxyTexture(colorHex) {
    ------------------------------------------------------------ */
 
 const NEBULA_PALETTES = [
-  ["120, 60, 200", "40, 20, 90"], // violeta profundo
-  ["40, 130, 220", "10, 40, 90"], // azul
-  ["220, 70, 160", "90, 20, 70"], // magenta/rosa
-  ["50, 200, 190", "10, 70, 80"], // turquesa
+  ["120, 60, 200", "40, 20, 90", "220, 190, 255"], // violeta profundo, núcleo lavanda
+  ["40, 130, 220", "10, 40, 90", "200, 230, 255"], // azul, núcleo celeste
+  ["220, 70, 160", "90, 20, 70", "255, 210, 235"], // magenta/rosa, núcleo rosado pálido
+  ["50, 200, 190", "10, 70, 80", "210, 255, 245"], // turquesa, núcleo blanco-verdoso
 ];
 
 function createNebulae(count = 6, radius = 8000) {
@@ -115,7 +158,7 @@ function createNebulae(count = 6, radius = 8000) {
 
   for (let i = 0; i < count; i++) {
     const palette = NEBULA_PALETTES[i % NEBULA_PALETTES.length];
-    const texture = createNebulaTexture(palette[0], palette[1]);
+    const texture = createNebulaTexture(palette[0], palette[1], palette[2]);
 
     const material = new THREE.SpriteMaterial({
       map: texture,

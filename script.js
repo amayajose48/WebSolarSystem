@@ -33,6 +33,7 @@ import { BODY_CONTENT } from "./content.js";
 import { createMeteorShower } from "./meteors.js";
 import { toggleAmbientAudio } from "./audio.js";
 import { createSpaceStations } from "./stations.js";
+import { TEAM_INFO } from "./team.js";
 
 /* ------------------------------------------------------------
    1. ESCENA, CÁMARA, RENDERER
@@ -99,7 +100,7 @@ composer.addPass(new OutputPass());
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
-controls.minDistance = 20;
+controls.minDistance = 20; // se ajusta dinámicamente por objeto al seleccionar (ver selectBody)
 controls.maxDistance = 5000; // ampliado en FASE 4 para poder alejarse y ver nebulosas/galaxias
 controls.zoomSpeed = 0.8;
 
@@ -466,7 +467,11 @@ function computeFramingPosition(targetPosition, radius) {
       ? currentDirection.normalize()
       : new THREE.Vector3(0, 0.35, 1).normalize();
 
-  const viewDistance = Math.max(radius * 4.5, 6) + 4;
+  // El piso de 6 unidades estaba pensado para que la cámara nunca quedara
+  // pegada a un planeta grande — pero para objetos chicos (estaciones,
+  // cometas) hacía que el primer encuadre ya arrancara demasiado lejos
+  // como para apreciar el detalle. Bajado a 3.
+  const viewDistance = Math.max(radius * 4.5, 3) + 4;
   return targetPosition.clone().add(direction.multiplyScalar(viewDistance));
 }
 
@@ -544,6 +549,15 @@ function selectBody(hit) {
 
   const endPos = computeFramingPosition(worldPosition, hit.radius);
 
+  // El zoom mínimo (controls.minDistance) estaba fijo en 20 unidades para
+  // TODO — suficiente para no atravesar el Sol, pero de más para objetos
+  // chicos como la ISS (radio ~0.6): OrbitControls empujaba la cámara de
+  // vuelta a 20 unidades apenas se acercaba, sin dejar ver el detalle real.
+  // Ahora se ajusta al tamaño de cada destino.
+  if (hit.zoomable !== false) {
+    controls.minDistance = Math.max(hit.radius * 1.3, 0.6);
+  }
+
   // Nebulosas/galaxias: son un telón de fondo plano, no un objeto 3D real
   // que tenga sentido "visitar" de cerca — la cámara se queda donde está,
   // solo se muestra la información.
@@ -565,6 +579,7 @@ function deselectBody() {
   if (!selectedBodyName) return; // ya estábamos en vista libre, no hacer nada
   selectedBodyName = null;
 
+  controls.minDistance = 20; // volvemos al límite general de la vista libre
   startCameraTransition(HOME_CAMERA_POSITION, HOME_CAMERA_TARGET, 1200);
   hidePanel();
   cameraStatusEl.textContent = "LIBRE";
@@ -596,6 +611,7 @@ const hudHint = document.getElementById("hud-hint");
 const cameraStatusEl = document.getElementById("camera-status");
 
 const infoPanelBody = document.getElementById("info-panel-body");
+const panelImage = document.getElementById("panel-image");
 
 function showPanel(name) {
   const data = BODY_CONTENT[name];
@@ -620,6 +636,19 @@ function showPanel(name) {
       li.textContent = fact;
       panelCuriosidades.appendChild(li);
     });
+
+    // Imagen representativa: solo los cuerpos con textura real (planetas,
+    // Sol, Luna) la tienen. Si no hay campo `imagen`, o si el archivo
+    // todavía no se descargó, la escondemos en vez de mostrar un ícono roto.
+    if (data.imagen) {
+      panelImage.onerror = () => panelImage.classList.add("hidden");
+      panelImage.src = data.imagen;
+      panelImage.alt = `Superficie de ${name}`;
+      panelImage.classList.remove("hidden");
+    } else {
+      panelImage.removeAttribute("src");
+      panelImage.classList.add("hidden");
+    }
   }
 
   if (panelAlreadyOpen) {
@@ -772,7 +801,6 @@ const speedLabel = document.getElementById("speed-label");
 const resetButton = document.getElementById("btn-reset");
 const followButton = document.getElementById("btn-follow");
 const freeViewButton = document.getElementById("btn-free-view");
-const sunViewButton = document.getElementById("btn-sun-view");
 
 function togglePlayPause() {
   isPlaying = !isPlaying;
@@ -807,17 +835,11 @@ function toggleFollow() {
   followEnabled ? disableFollow() : enableFollow();
 }
 
-function viewSun() {
-  const sunEntry = clickableRegistry.find((entry) => entry.name === "Sol");
-  if (sunEntry) selectBody(sunEntry);
-}
-
 playPauseButton.addEventListener("click", togglePlayPause);
 speedButton.addEventListener("click", cycleSpeed);
 resetButton.addEventListener("click", resetSimulation);
 followButton.addEventListener("click", toggleFollow);
 freeViewButton.addEventListener("click", deselectBody);
-sunViewButton.addEventListener("click", viewSun);
 
 /* ------------------------------------------------------------
    FASE 14: SONIDO AMBIENTAL
@@ -866,6 +888,82 @@ modeButton.addEventListener("click", () => {
   // estado ambiguo (panel completo abierto pero ya en modo exploración)
   hidePanel();
 });
+
+/* ------------------------------------------------------------
+   MODAL "SOBRE EL EQUIPO"
+   -------------------------------------------------------------
+   Los datos vienen de team.js — para cambiarlos alcanza con
+   editar ese archivo, no hace falta tocar este ni el HTML.
+   ------------------------------------------------------------ */
+
+const teamButton = document.getElementById("btn-team");
+const teamOverlay = document.getElementById("team-overlay");
+const teamClose = document.getElementById("team-close");
+
+document.getElementById("team-category").textContent = TEAM_INFO.categoria;
+document.getElementById("team-nombre").textContent = TEAM_INFO.nombreEquipo;
+document.getElementById("team-colegio").textContent = TEAM_INFO.centroEducativo;
+document.getElementById("team-capitan").textContent = TEAM_INFO.capitan;
+document.getElementById("team-docente").textContent = TEAM_INFO.docenteEntrenador;
+document.getElementById("team-integrantes").textContent = TEAM_INFO.integrantes.join(", ");
+
+function openTeamOverlay() {
+  teamOverlay.classList.remove("hidden");
+}
+function closeTeamOverlay() {
+  teamOverlay.classList.add("hidden");
+}
+
+teamButton.addEventListener("click", openTeamOverlay);
+teamClose.addEventListener("click", closeTeamOverlay);
+teamOverlay.addEventListener("click", (event) => {
+  if (event.target === teamOverlay) closeTeamOverlay(); // clic afuera de la tarjeta = cerrar
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !teamOverlay.classList.contains("hidden")) {
+    closeTeamOverlay();
+  }
+});
+
+/* ------------------------------------------------------------
+   MODAL "INTRODUCCIÓN / AYUDA"
+   -------------------------------------------------------------
+   Se muestra sola la primera vez que alguien abre la app (se
+   guarda en localStorage para no repetirla en cada visita), y
+   siempre queda disponible a mano con el botón "Ayuda".
+   ------------------------------------------------------------ */
+
+const INTRO_STORAGE_KEY = "orbita-intro-visto";
+const introButton = document.getElementById("btn-help");
+const introOverlay = document.getElementById("intro-overlay");
+const introClose = document.getElementById("intro-close");
+const introStartBtn = document.getElementById("intro-start-btn");
+
+function openIntroOverlay() {
+  introOverlay.classList.remove("hidden");
+}
+function closeIntroOverlay() {
+  introOverlay.classList.add("hidden");
+  localStorage.setItem(INTRO_STORAGE_KEY, "1");
+}
+
+introButton.addEventListener("click", openIntroOverlay);
+introClose.addEventListener("click", closeIntroOverlay);
+introStartBtn.addEventListener("click", closeIntroOverlay);
+introOverlay.addEventListener("click", (event) => {
+  if (event.target === introOverlay) closeIntroOverlay();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !introOverlay.classList.contains("hidden")) {
+    closeIntroOverlay();
+  }
+});
+
+// Primera visita: se muestra sola, un instante después de que termine de
+// cargar (para no competir con la animación de materialización del sistema).
+if (!localStorage.getItem(INTRO_STORAGE_KEY)) {
+  setTimeout(openIntroOverlay, 1600);
+}
 
 /* ------------------------------------------------------------
    FASE 10: ANIMACIÓN DE ENTRADA ("materialización")

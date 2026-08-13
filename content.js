@@ -11,6 +11,7 @@
 export const BODY_CONTENT = {
   Sol: {
     tipo: "Estrella",
+    imagen: "textures/wiki_sun.jpg",
     temperatura: "~5.500 °C en la superficie (15.000.000 °C en el núcleo)",
     masa: "1,989 × 10³⁰ kg (333.000 veces la masa de la Tierra)",
     diametro: "1.392.700 km",
@@ -27,6 +28,7 @@ export const BODY_CONTENT = {
 
   Mercurio: {
     tipo: "Planeta rocoso",
+    imagen: "textures/wiki_mercury.jpg",
     temperatura: "Entre -180 °C y 430 °C (la mayor variación del Sistema Solar)",
     masa: "3,3 × 10²³ kg (0,055 masas terrestres)",
     diametro: "4.880 km",
@@ -43,6 +45,7 @@ export const BODY_CONTENT = {
 
   Venus: {
     tipo: "Planeta rocoso",
+    imagen: "textures/wiki_venus.jpg",
     temperatura: "~465 °C (el planeta más caliente del Sistema Solar)",
     masa: "4,87 × 10²⁴ kg (0,815 masas terrestres)",
     diametro: "12.104 km",
@@ -59,6 +62,7 @@ export const BODY_CONTENT = {
 
   Tierra: {
     tipo: "Planeta rocoso",
+    imagen: "textures/wiki_earth.jpg",
     temperatura: "~15 °C de media",
     masa: "5,97 × 10²⁴ kg",
     diametro: "12.742 km",
@@ -75,6 +79,7 @@ export const BODY_CONTENT = {
 
   Luna: {
     tipo: "Satélite natural de la Tierra",
+    imagen: "textures/wiki_moon.jpg",
     temperatura: "Entre -173 °C y 127 °C",
     masa: "7,35 × 10²² kg",
     diametro: "3.474 km",
@@ -91,6 +96,7 @@ export const BODY_CONTENT = {
 
   Marte: {
     tipo: "Planeta rocoso",
+    imagen: "textures/wiki_mars.jpg",
     temperatura: "~-63 °C de media",
     masa: "6,42 × 10²³ kg (0,107 masas terrestres)",
     diametro: "6.779 km",
@@ -107,6 +113,7 @@ export const BODY_CONTENT = {
 
   Júpiter: {
     tipo: "Gigante gaseoso",
+    imagen: "textures/wiki_jupiter.jpg",
     temperatura: "~-110 °C en las nubes superiores",
     masa: "1,898 × 10²⁷ kg (318 masas terrestres)",
     diametro: "139.820 km",
@@ -187,6 +194,7 @@ export const BODY_CONTENT = {
 
   Saturno: {
     tipo: "Gigante gaseoso",
+    imagen: "textures/wiki_saturn.jpg",
     temperatura: "~-140 °C en las nubes superiores",
     masa: "5,68 × 10²⁶ kg (95 masas terrestres)",
     diametro: "116.460 km",
@@ -219,6 +227,7 @@ export const BODY_CONTENT = {
 
   Urano: {
     tipo: "Gigante de hielo",
+    imagen: "textures/wiki_uranus.jpg",
     temperatura: "~-195 °C (el planeta más frío del Sistema Solar)",
     masa: "8,68 × 10²⁵ kg (14,5 masas terrestres)",
     diametro: "50.724 km",
@@ -235,6 +244,7 @@ export const BODY_CONTENT = {
 
   Neptuno: {
     tipo: "Gigante de hielo",
+    imagen: "textures/wiki_neptune.jpg",
     temperatura: "~-200 °C en las nubes superiores",
     masa: "1,02 × 10²⁶ kg (17 masas terrestres)",
     diametro: "49.244 km",
@@ -315,25 +325,27 @@ export const BODY_CONTENT = {
 
   Nebulosa: {
     tipo: "Nube de gas y polvo interestelar",
-    temperatura: "—",
-    masa: "—",
-    diametro: "—",
+    temperatura: "Puede variar entre -260 °C en su interior y varios miles de °C cerca de estrellas jóvenes",
+    masa: "Algunas nebulosas contienen suficiente gas para formar miles de estrellas",
+    diametro: "Desde unos pocos años luz hasta cientos de años luz de extensión",
     distanciaAlSol: "Muy lejos del Sistema Solar, fuera de su alcance gravitacional",
     dia: "—",
     anio: "—",
     lunas: "—",
     curiosidades: [
-      "Muchas nebulosas son 'guarderías estelares': ahí nacen las estrellas nuevas.",
-      "Otras son los restos de una estrella que explotó como supernova.",
+      "Muchas nebulosas son 'guarderías estelares': ahí nacen las estrellas nuevas, condensándose por gravedad.",
+      "Otras son los restos de una estrella que explotó como supernova, o que expulsó sus capas externas al morir.",
       "La Nebulosa de Orión, una de las más famosas y reales, se puede ver a simple vista desde la Tierra en una noche despejada.",
+      "Están hechas principalmente de hidrógeno y helio — los mismos elementos con los que se formó el Sol.",
+      "Los colores que se ven en las fotos reales de nebulosas suelen venir de distintos gases: el rojo es típicamente hidrógeno, el azul suele ser oxígeno.",
     ],
   },
 
   Galaxia: {
     tipo: "Sistema de estrellas, gas y polvo unidos por gravedad",
     temperatura: "—",
-    masa: "—",
-    diametro: "—",
+    masa: "Puede llegar a billones de veces la masa del Sol",
+    diametro: "Desde unos pocos miles hasta cientos de miles de años luz",
     distanciaAlSol: "Millones de años luz de distancia",
     dia: "—",
     anio: "—",
@@ -342,6 +354,8 @@ export const BODY_CONTENT = {
       "Nuestra galaxia, la Vía Láctea, tiene entre 100.000 y 400.000 millones de estrellas.",
       "La galaxia de Andrómeda, la más cercana a la nuestra, se está acercando y colisionará con la Vía Láctea... en unos 4.500 millones de años.",
       "Existen alrededor de 2 billones de galaxias en el universo observable.",
+      "La mayoría de las galaxias grandes, incluida la nuestra, tienen un agujero negro supermasivo en su centro.",
+      "Las galaxias tienen distintas formas: espirales (como la Vía Láctea), elípticas, e irregulares.",
     ],
   },
 
