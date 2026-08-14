@@ -11,13 +11,14 @@ import * as THREE from "three";
 
 /**
  * Junta en un solo arreglo todos los objetos que se pueden "tocar": el Sol,
- * cada planeta, cada luna, el cinturón de asteroides, los cometas, y las
- * nebulosas/galaxias decorativas del fondo. Cada entrada guarda su radio
- * (para calcular qué tan cerca acercar la cámara) y su nombre (para buscar
- * el contenido educativo en content.js).
+ * cada planeta, cada luna, los cometas, las estaciones espaciales y las
+ * nebulosas del fondo. Cada entrada guarda su radio (para calcular qué tan
+ * cerca acercar la cámara) y su nombre (para buscar el contenido educativo
+ * en content.js).
  *
- * El polvo espacial (space dust) queda afuera a propósito: es una capa
- * puramente ambiental, no un "destino" identificable — no aporta tocarla.
+ * El cinturón de asteroides, las galaxias y el polvo espacial quedan afuera
+ * a propósito: son elementos decorativos sin una identidad individual real
+ * que mostrar (ver nota más abajo).
  */
 export function buildClickableRegistry({ sun, planets, asteroidBelt, comets, deepSpace, stations }) {
   const registry = [];
@@ -33,20 +34,12 @@ export function buildClickableRegistry({ sun, planets, asteroidBelt, comets, dee
     });
   });
 
-  if (asteroidBelt) {
-    // Es un único InstancedMesh con cientos de instancias: cualquier
-    // asteroide que se toque cuenta como "el cinturón" — el marcado
-    // `isInstanced` le avisa a setupClickDetection que necesita resolver
-    // la posición exacta de ESA instancia particular, no del mesh entero
-    // (que vive en el origen y no representa la posición de ningún asteroide).
-    registry.push({
-      mesh: asteroidBelt.mesh,
-      name: "Cinturón de asteroides",
-      radius: 8,
-      isInstanced: true,
-      followable: false, // no hay "un" asteroide individual que seguir
-    });
-  }
+  // El cinturón de asteroides y las galaxias quedaron afuera a propósito:
+  // a diferencia de un planeta, una luna o un cometa (cada uno con nombre
+  // e identidad propia), acá cualquier clic mostraba la misma info genérica
+  // ("Cinturón de asteroides" / "Galaxia") sin importar cuál se tocara —
+  // no es un destino "identificado" de verdad, así que mejor no ofrecer
+  // esa interacción que resultaba engañosa.
 
   if (comets) {
     comets.comets.forEach((comet) => {
@@ -57,27 +50,6 @@ export function buildClickableRegistry({ sun, planets, asteroidBelt, comets, dee
   if (stations) {
     stations.stations.forEach((station) => {
       registry.push({ mesh: station.glow, name: station.name, radius: station.radius });
-    });
-  }
-
-  if (deepSpace) {
-    deepSpace.nebulae.children.forEach((sprite) => {
-      registry.push({
-        mesh: sprite,
-        name: "Nebulosa",
-        radius: sprite.scale.x / 2,
-        followable: false,
-        zoomable: false, // es un sprite plano de fondo — acercarse mucho solo se ve como un borrón
-      });
-    });
-    deepSpace.galaxies.children.forEach((sprite) => {
-      registry.push({
-        mesh: sprite,
-        name: "Galaxia",
-        radius: sprite.scale.x / 2,
-        followable: false,
-        zoomable: false,
-      });
     });
   }
 

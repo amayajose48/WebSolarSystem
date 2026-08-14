@@ -27,7 +27,9 @@ import { createAllPlanets, updatePlanets, resetPlanets } from "./planets.js";
 import { createSun } from "./sun.js";
 import { createAsteroidBelt } from "./asteroids.js";
 import { createDeepSpace } from "./space.js";
-import { createComets } from "./comets.js";
+// createComets ya no se importa: los cometas quedaron desactivados (ver
+// más abajo, sección 5d) — el archivo comets.js sigue existiendo por si
+// se quieren reactivar más adelante.
 import { buildClickableRegistry, setupClickDetection } from "./interaction.js";
 import { BODY_CONTENT } from "./content.js";
 import { createMeteorShower } from "./meteors.js";
@@ -238,15 +240,19 @@ scene.add(asteroidBelt.mesh);
    ------------------------------------------------------------ */
 
 const deepSpace = createDeepSpace();
-scene.add(deepSpace.nebulae);
-scene.add(deepSpace.galaxies);
 scene.add(deepSpace.dust);
 
 /* ------------------------------------------------------------
-   5d. COMETAS (FASE 5)
+   5d. COMETAS — desactivados a pedido (no se veían bien)
+   -------------------------------------------------------------
+   Se deja un objeto "vacío" con la misma forma que createComets()
+   devuelve, para no tener que tocar el resto del código que ya
+   los referencia (loop de animación, reset, registro de clics).
+   Si en algún momento se quieren reactivar, alcanza con volver a
+   llamar createComets(scene) acá.
    ------------------------------------------------------------ */
 
-const comets = createComets(scene);
+const comets = { comets: [], update() {}, reset() {} };
 
 /* ------------------------------------------------------------
    5e. METEOROS / ESTRELLAS FUGACES (FASE 14)

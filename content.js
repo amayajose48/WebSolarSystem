@@ -130,6 +130,7 @@ export const BODY_CONTENT = {
 
   Ío: {
     tipo: "Luna de Júpiter (galileana)",
+    imagen: "textures/wiki_io.jpg",
     temperatura: "~-143 °C de media, pero con volcanes que superan los 1.300 °C",
     masa: "8,9 × 10²² kg",
     diametro: "3.643 km",
@@ -146,6 +147,7 @@ export const BODY_CONTENT = {
 
   Europa: {
     tipo: "Luna de Júpiter (galileana)",
+    imagen: "textures/wiki_europa.jpg",
     temperatura: "~-160 °C en la superficie",
     masa: "4,8 × 10²² kg",
     diametro: "3.122 km",
@@ -162,6 +164,7 @@ export const BODY_CONTENT = {
 
   Ganímedes: {
     tipo: "Luna de Júpiter (galileana)",
+    imagen: "textures/wiki_ganymede.jpg",
     temperatura: "~-160 °C de media",
     masa: "1,48 × 10²³ kg",
     diametro: "5.268 km",
@@ -178,6 +181,7 @@ export const BODY_CONTENT = {
 
   Calisto: {
     tipo: "Luna de Júpiter (galileana)",
+    imagen: "textures/wiki_callisto.jpg",
     temperatura: "~-140 °C de media",
     masa: "1,08 × 10²³ kg",
     diametro: "4.821 km",
@@ -211,6 +215,7 @@ export const BODY_CONTENT = {
 
   Titán: {
     tipo: "Luna de Saturno",
+    imagen: "textures/wiki_titan.jpg",
     temperatura: "~-179 °C en la superficie",
     masa: "1,35 × 10²³ kg",
     diametro: "5.150 km",
@@ -256,106 +261,6 @@ export const BODY_CONTENT = {
       "Tiene los vientos más fuertes del Sistema Solar: hasta 2.100 km/h.",
       "Fue descubierto matemáticamente antes de ser observado: su posición se predijo por su efecto gravitacional sobre Urano.",
       "Tarda 165 años terrestres en dar una vuelta al Sol — ni un año ha pasado desde su descubrimiento en 1846 hasta completar una órbita, en 2011.",
-    ],
-  },
-
-  "Cinturón de asteroides": {
-    tipo: "Región del Sistema Solar",
-    temperatura: "—",
-    masa: "Toda la región junta pesa menos que la Luna",
-    diametro: "—",
-    distanciaAlSol: "Entre 2,1 y 3,3 UA (entre Marte y Júpiter)",
-    dia: "—",
-    anio: "—",
-    lunas: "—",
-    curiosidades: [
-      "Contiene millones de objetos rocosos, pero están tan dispersos que las sondas espaciales pasan a través sin problema.",
-      "Ceres, el objeto más grande del cinturón, es un planeta enano — y por sí solo tiene casi un tercio de toda la masa del cinturón.",
-      "Probablemente son restos de un planeta que nunca llegó a formarse: la gravedad de Júpiter impidió que ese material se uniera.",
-    ],
-  },
-
-  "Cometa Ártico": {
-    tipo: "Cometa",
-    temperatura: "—",
-    masa: "—",
-    diametro: "Núcleo de unos pocos km",
-    distanciaAlSol: "Órbita muy excéntrica: se acerca mucho y se aleja muchísimo",
-    dia: "—",
-    anio: "—",
-    lunas: "—",
-    curiosidades: [
-      "Su cola siempre apunta en dirección opuesta al Sol, sin importar hacia dónde viaja — la empuja el viento solar.",
-      "Está hecho de hielo, polvo y roca: por eso a veces se los llama 'bolas de nieve sucias'.",
-      "Se mueve mucho más rápido cerca del Sol que lejos de él (2da ley de Kepler).",
-    ],
-  },
-
-  "Cometa Esmeralda": {
-    tipo: "Cometa",
-    temperatura: "—",
-    masa: "—",
-    diametro: "Núcleo de unos pocos km",
-    distanciaAlSol: "Órbita muy excéntrica: se acerca mucho y se aleja muchísimo",
-    dia: "—",
-    anio: "—",
-    lunas: "—",
-    curiosidades: [
-      "La cola de un cometa puede crecer millones de kilómetros cerca del Sol, y encogerse casi por completo lejos de él.",
-      "Cada vez que pasa cerca del Sol, pierde un poco de su material — los cometas no duran para siempre.",
-      "Algunos cometas tardan miles de años en completar una sola órbita.",
-    ],
-  },
-
-  "Cometa Dorado": {
-    tipo: "Cometa",
-    temperatura: "—",
-    masa: "—",
-    diametro: "Núcleo de unos pocos km",
-    distanciaAlSol: "Órbita muy excéntrica: se acerca mucho y se aleja muchísimo",
-    dia: "—",
-    anio: "—",
-    lunas: "—",
-    curiosidades: [
-      "Muchos cometas vienen del cinturón de Kuiper o de la lejanísima Nube de Oort, en los confines del Sistema Solar.",
-      "El polvo que dejan en su camino, al año siguiente, es lo que produce las lluvias de estrellas fugaces.",
-      "El cometa Halley, el más famoso de la historia real, vuelve a verse desde la Tierra cada 76 años.",
-    ],
-  },
-
-  Nebulosa: {
-    tipo: "Nube de gas y polvo interestelar",
-    temperatura: "Puede variar entre -260 °C en su interior y varios miles de °C cerca de estrellas jóvenes",
-    masa: "Algunas nebulosas contienen suficiente gas para formar miles de estrellas",
-    diametro: "Desde unos pocos años luz hasta cientos de años luz de extensión",
-    distanciaAlSol: "Muy lejos del Sistema Solar, fuera de su alcance gravitacional",
-    dia: "—",
-    anio: "—",
-    lunas: "—",
-    curiosidades: [
-      "Muchas nebulosas son 'guarderías estelares': ahí nacen las estrellas nuevas, condensándose por gravedad.",
-      "Otras son los restos de una estrella que explotó como supernova, o que expulsó sus capas externas al morir.",
-      "La Nebulosa de Orión, una de las más famosas y reales, se puede ver a simple vista desde la Tierra en una noche despejada.",
-      "Están hechas principalmente de hidrógeno y helio — los mismos elementos con los que se formó el Sol.",
-      "Los colores que se ven en las fotos reales de nebulosas suelen venir de distintos gases: el rojo es típicamente hidrógeno, el azul suele ser oxígeno.",
-    ],
-  },
-
-  Galaxia: {
-    tipo: "Sistema de estrellas, gas y polvo unidos por gravedad",
-    temperatura: "—",
-    masa: "Puede llegar a billones de veces la masa del Sol",
-    diametro: "Desde unos pocos miles hasta cientos de miles de años luz",
-    distanciaAlSol: "Millones de años luz de distancia",
-    dia: "—",
-    anio: "—",
-    lunas: "—",
-    curiosidades: [
-      "Nuestra galaxia, la Vía Láctea, tiene entre 100.000 y 400.000 millones de estrellas.",
-      "La galaxia de Andrómeda, la más cercana a la nuestra, se está acercando y colisionará con la Vía Láctea... en unos 4.500 millones de años.",
-      "Existen alrededor de 2 billones de galaxias en el universo observable.",
-      "La mayoría de las galaxias grandes, incluida la nuestra, tienen un agujero negro supermasivo en su centro.",
-      "Las galaxias tienen distintas formas: espirales (como la Vía Láctea), elípticas, e irregulares.",
     ],
   },
 

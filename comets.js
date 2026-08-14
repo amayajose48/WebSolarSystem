@@ -61,14 +61,14 @@ function createComet(config) {
 
   // Núcleo: pequeña esfera helada, autoiluminada (no depende de la luz del Sol
   // para que se vea siempre, incluso muy lejos donde la luz apenas llega)
-  const nucleusGeometry = new THREE.SphereGeometry(2.2, 16, 16);
+  const nucleusGeometry = new THREE.SphereGeometry(1.0, 16, 16);
   const nucleusMaterial = new THREE.MeshBasicMaterial({ color: config.color });
   const nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
   group.add(nucleus);
 
   // Halo pequeño alrededor del núcleo
   const glow = createGlowSprite(config.color);
-  glow.scale.set(16, 16, 1);
+  glow.scale.set(8, 8, 1);
   group.add(glow);
 
   // Cola: buffer circular de posiciones pasadas
@@ -149,8 +149,26 @@ function createComet(config) {
     history.length = 0; // vacía la cola para que no se vea un salto brusco al resetear
   }
 
+  // Línea de órbita: a diferencia del rastro de la cola (que se va formando
+  // con el tiempo), esto dibuja la elipse COMPLETA de una sola vez, muestreando
+  // keplerPosition en todo el rango de ángulos — así se ve el camino entero
+  // que recorre el cometa, igual que las líneas de órbita de los planetas.
+  const orbitSegments = 180;
+  const orbitPoints = [];
+  for (let i = 0; i <= orbitSegments; i++) {
+    const theta = (i / orbitSegments) * Math.PI * 2;
+    orbitPoints.push(keplerPosition(theta));
+  }
+  const orbitGeometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+  const orbitMaterial = new THREE.LineBasicMaterial({
+    color: config.color,
+    transparent: true,
+    opacity: 0.2,
+  });
+  const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+
   group.add(trail);
-  return { name: config.name, group, glow, radius: 2.2, update, reset };
+  return { name: config.name, group, glow, orbitLine, radius: 1.0, update, reset };
 }
 
 /**
@@ -158,7 +176,10 @@ function createComet(config) {
  */
 export function createComets(scene) {
   const comets = COMET_CONFIGS.map(createComet);
-  comets.forEach((comet) => scene.add(comet.group));
+  comets.forEach((comet) => {
+    scene.add(comet.group);
+    scene.add(comet.orbitLine);
+  });
 
   function updateAll(delta) {
     comets.forEach((comet) => comet.update(delta));
