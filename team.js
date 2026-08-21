@@ -12,15 +12,15 @@
    ============================================================ */
 
 export const TEAM_INFO = {
-  nombreEquipo: "Nombre del equipo",
-  centroEducativo: "Nombre del colegio",
+  nombreEquipo: "Cosmos",
+  centroEducativo: "Centro Cultural Salvadoreño Americano de San Miguel",
   categoria: "Código TBox — Desarrollo Web con Inteligencia Artificial",
-  capitan: "Nombre del/la capitán/a",
-  docenteEntrenador: "Nombre del/la docente",
+  capitan: "Nathaly ",
+  docenteEntrenador: " Lic.Roberto ",
   integrantes: [
-    "Integrante 1",
-    "Integrante 2",
-    "Integrante 3",
-    "Integrante 4",
+    "Nathaly",
+    "Hayden",
+    "Ian",
+    "Ashley",
   ],
 };

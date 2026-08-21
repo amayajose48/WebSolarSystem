@@ -903,6 +903,171 @@ button {
 }
 
 /* ============================================================
+   FASE 16: MISIONES Y PROGRESO
+   ============================================================ */
+
+/* --- Badge de puntos en la topbar --- */
+.hud-points {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(79, 209, 255, 0.08);
+  border: 1px solid var(--panel-border);
+  font-family: var(--font-mono);
+}
+
+.hud-points-icon {
+  color: var(--accent-cyan);
+  font-size: 0.8rem;
+}
+
+.hud-points-value {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* --- Modal de misiones --- */
+.missions-summary {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--accent-cyan);
+  margin-bottom: 20px;
+  padding-right: 30px;
+}
+
+.missions-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.mission-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mission-item.completed {
+  border-color: rgba(79, 209, 255, 0.4);
+  background: rgba(79, 209, 255, 0.06);
+}
+
+.mission-icon {
+  flex-shrink: 0;
+  font-size: 1.2rem;
+  width: 30px;
+  text-align: center;
+}
+
+.mission-body {
+  flex: 1;
+}
+
+.mission-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.mission-item.completed .mission-title::after {
+  content: " ✓";
+  color: var(--accent-cyan);
+}
+
+.mission-description {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.mission-points {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  white-space: nowrap;
+}
+
+.missions-reset-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  transition: all 0.2s var(--ease-smooth);
+}
+
+.missions-reset-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--panel-border-hover);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* --- Aviso de misión completada --- */
+.mission-toast {
+  position: absolute;
+  top: calc(var(--topbar-height) + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 22px;
+  border-radius: var(--radius-md);
+  background: var(--panel-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(79, 209, 255, 0.4);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 35;
+  transition: opacity 0.4s var(--ease-smooth), transform 0.4s var(--ease-smooth);
+}
+
+.mission-toast.hidden {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-12px);
+}
+
+.mission-toast-icon {
+  font-size: 1.6rem;
+}
+
+.mission-toast-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.mission-toast-points {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent-cyan);
+}
+
+@media (max-width: 720px) {
+  .hud-points {
+    padding: 4px 9px;
+  }
+  .hud-points-value {
+    font-size: 0.7rem;
+  }
+}
+
+/* ============================================================
    BARRA DE CONTROLES DE REPRODUCCIÓN (FASE 9)
    ============================================================ */
 .playback-dock {

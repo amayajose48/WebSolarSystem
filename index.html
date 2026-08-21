@@ -80,7 +80,16 @@
           <span class="hud-btn-icon">?</span>
           <span class="hud-btn-label">Ayuda</span>
         </button>
+        <button class="hud-btn" id="btn-missions" title="Misiones">
+          <span class="hud-btn-icon">🎯</span>
+          <span class="hud-btn-label">Misiones</span>
+        </button>
       </nav>
+
+      <div class="hud-points" id="hud-points" title="Puntos de exploración">
+        <span class="hud-points-icon">★</span>
+        <span class="hud-points-value" id="hud-points-value">0</span>
+      </div>
 
       <div class="hud-clock" id="hud-clock">
         <span class="hud-clock-label">UTC</span>
@@ -126,6 +135,26 @@
       </div>
     </div>
 
+    <!-- ============ MODAL: MISIONES (FASE 16) ============ -->
+    <div id="missions-overlay" class="modal-overlay hidden">
+      <div class="modal-card">
+        <button class="modal-close-btn" id="missions-close" title="Cerrar">✕</button>
+        <div class="intro-title">Misiones</div>
+        <div class="missions-summary" id="missions-summary">0 / 0 completadas · 0 puntos</div>
+        <ul class="missions-list" id="missions-list"></ul>
+        <button class="missions-reset-btn" id="missions-reset-btn">Reiniciar progreso</button>
+      </div>
+    </div>
+
+    <!-- Aviso de misión completada -->
+    <div class="mission-toast hidden" id="mission-toast">
+      <span class="mission-toast-icon" id="mission-toast-icon">🏆</span>
+      <div class="mission-toast-text">
+        <div class="mission-toast-title" id="mission-toast-title">Misión completada</div>
+        <div class="mission-toast-points" id="mission-toast-points">+10 pts</div>
+      </div>
+    </div>
+
     <!-- ============ MODAL: INTRODUCCIÓN / AYUDA ============ -->
     <div id="intro-overlay" class="modal-overlay hidden">
       <div class="modal-card">
@@ -135,8 +164,9 @@
         <ul class="intro-list">
           <li><span class="intro-icon">✋</span><span>Arrastrá con el mouse (o el dedo) para girar la cámara alrededor de la escena.</span></li>
           <li><span class="intro-icon">🔍</span><span>Usá la rueda del mouse (o pellizcá en pantalla táctil) para acercar o alejar.</span></li>
-          <li><span class="intro-icon">◉</span><span>Tocá cualquier planeta, luna, cometa, estación espacial, asteroide, nebulosa o galaxia para ver su información.</span></li>
+          <li><span class="intro-icon">◉</span><span>Tocá cualquier planeta, luna o estación espacial para ver su información.</span></li>
           <li><span class="intro-icon">⌕</span><span>Usá el buscador (arriba) para ir directo a un destino por su nombre.</span></li>
+          <li><span class="intro-icon">🎯</span><span>Completá misiones visitando destinos: sumás puntos y tu progreso se guarda solo, para seguir la próxima vez.</span></li>
           <li><span class="intro-icon">⏸</span><span>Abajo tenés los controles: Play/Pausa, velocidad, Reset, Seguir y Vista libre.</span></li>
           <li><span class="intro-icon">◈</span><span>El modo Educativo muestra toda la información al tocar un destino; el modo Exploración solo su nombre, para recorrer más rápido.</span></li>
         </ul>

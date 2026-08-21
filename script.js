@@ -36,6 +36,7 @@ import { createMeteorShower } from "./meteors.js";
 import { toggleAmbientAudio } from "./audio.js";
 import { createSpaceStations } from "./stations.js";
 import { TEAM_INFO } from "./team.js";
+import { MISSIONS, getProgress, registerVisit, resetProgress } from "./missions.js";
 
 /* ------------------------------------------------------------
    1. ESCENA, CÁMARA, RENDERER
@@ -365,6 +366,10 @@ async function initScene() {
   clickableRegistry = buildClickableRegistry({ sun, planets, asteroidBelt, comets, deepSpace, stations });
   setupClickDetection(camera, renderer, clickableRegistry, handleBodyPicked);
 
+  // FASE 16: lista de nombres únicos de destinos visitables, para la
+  // misión "Explorador completo" y para saber contra qué medir el progreso.
+  allDestinationNames = [...new Set(clickableRegistry.map((entry) => entry.name))];
+
   // FASE 10: preparamos la animación de "materialización" — el Sol y los
   // planetas arrancan en escala ~0 y crecen escalonados apenas se revela
   // la interfaz, en vez de aparecer ya completos de golpe.
@@ -414,6 +419,7 @@ const clock = new THREE.Clock();
    ------------------------------------------------------------ */
 
 let clickableRegistry = [];
+let allDestinationNames = [];
 let selectedBodyName = null;
 
 // Guardamos la posición/objetivo de la cámara "libre" para poder volver
@@ -578,6 +584,12 @@ function selectBody(hit) {
     showQuickTag(hit.name);
   }
   cameraStatusEl.textContent = `ENFOCADO: ${hit.name.toUpperCase()}`;
+
+  // FASE 16: registrar la visita para el sistema de misiones/progreso.
+  const newlyCompleted = registerVisit(hit.name, allDestinationNames);
+  updatePointsBadge();
+  newlyCompleted.forEach(showMissionToast);
+  if (!missionsOverlay.classList.contains("hidden")) renderMissionsList(); // si está abierto, refrescar en vivo
 }
 
 function deselectBody() {
@@ -970,6 +982,108 @@ document.addEventListener("keydown", (event) => {
 if (!localStorage.getItem(INTRO_STORAGE_KEY)) {
   setTimeout(openIntroOverlay, 1600);
 }
+
+/* ------------------------------------------------------------
+   FASE 16: MISIONES Y PROGRESO
+   -------------------------------------------------------------
+   Sin cuenta ni backend: todo el estado vive en missions.js, que
+   lo persiste en localStorage. Acá solo se conecta con la UI.
+   ------------------------------------------------------------ */
+
+const hudPointsValue = document.getElementById("hud-points-value");
+const missionsButton = document.getElementById("btn-missions");
+const missionsOverlay = document.getElementById("missions-overlay");
+const missionsClose = document.getElementById("missions-close");
+const missionsList = document.getElementById("missions-list");
+const missionsSummary = document.getElementById("missions-summary");
+const missionsResetBtn = document.getElementById("missions-reset-btn");
+const missionToast = document.getElementById("mission-toast");
+const missionToastIcon = document.getElementById("mission-toast-icon");
+const missionToastTitle = document.getElementById("mission-toast-title");
+const missionToastPoints = document.getElementById("mission-toast-points");
+let missionToastTimeout = null;
+
+function updatePointsBadge() {
+  hudPointsValue.textContent = getProgress().puntos;
+}
+
+function renderMissionsList() {
+  const progress = getProgress();
+  missionsList.innerHTML = "";
+
+  MISSIONS.forEach((mission) => {
+    const isCompleted = progress.completadas.includes(mission.id);
+
+    const item = document.createElement("li");
+    item.className = `mission-item${isCompleted ? " completed" : ""}`;
+
+    const icon = document.createElement("span");
+    icon.className = "mission-icon";
+    icon.textContent = mission.icon;
+
+    const body = document.createElement("div");
+    body.className = "mission-body";
+
+    const title = document.createElement("div");
+    title.className = "mission-title";
+    title.textContent = mission.title;
+
+    const description = document.createElement("div");
+    description.className = "mission-description";
+    description.textContent = mission.description;
+
+    body.appendChild(title);
+    body.appendChild(description);
+
+    const points = document.createElement("span");
+    points.className = "mission-points";
+    points.textContent = `+${mission.points}`;
+
+    item.appendChild(icon);
+    item.appendChild(body);
+    item.appendChild(points);
+    missionsList.appendChild(item);
+  });
+
+  missionsSummary.textContent = `${progress.completadas.length} / ${MISSIONS.length} completadas · ${progress.puntos} puntos`;
+}
+
+function showMissionToast(mission) {
+  missionToastIcon.textContent = mission.icon;
+  missionToastTitle.textContent = `¡Misión completada! ${mission.title}`;
+  missionToastPoints.textContent = `+${mission.points} pts`;
+  missionToast.classList.remove("hidden");
+  clearTimeout(missionToastTimeout);
+  missionToastTimeout = setTimeout(() => missionToast.classList.add("hidden"), 3200);
+}
+
+function openMissionsOverlay() {
+  renderMissionsList();
+  missionsOverlay.classList.remove("hidden");
+}
+function closeMissionsOverlay() {
+  missionsOverlay.classList.add("hidden");
+}
+
+missionsButton.addEventListener("click", openMissionsOverlay);
+missionsClose.addEventListener("click", closeMissionsOverlay);
+missionsOverlay.addEventListener("click", (event) => {
+  if (event.target === missionsOverlay) closeMissionsOverlay();
+});
+missionsResetBtn.addEventListener("click", () => {
+  const confirmed = window.confirm("¿Reiniciar todo el progreso de misiones? Esto no se puede deshacer.");
+  if (!confirmed) return;
+  resetProgress();
+  updatePointsBadge();
+  renderMissionsList();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !missionsOverlay.classList.contains("hidden")) {
+    closeMissionsOverlay();
+  }
+});
+
+updatePointsBadge(); // refleja el progreso guardado apenas carga la página
 
 /* ------------------------------------------------------------
    FASE 10: ANIMACIÓN DE ENTRADA ("materialización")
